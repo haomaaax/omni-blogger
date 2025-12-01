@@ -1,0 +1,499 @@
+/* ============================================
+   Blog Editor - Stylesheet
+   A clean, distraction-free writing experience
+   ============================================ */
+
+/* CSS Variables for easy theming */
+:root {
+  /* Light theme (default) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --text-placeholder: #adb5bd;
+  --border-color: #dee2e6;
+  --accent-color: #007bff;
+  --accent-hover: #0056b3;
+  --success-color: #28a745;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-mono: "SF Mono", Menlo, Monaco, monospace;
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  
+  /* Editor */
+  --editor-max-width: 720px;
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #242424;
+    --bg-tertiary: #333333;
+    --text-primary: #e9ecef;
+    --text-secondary: #adb5bd;
+    --text-placeholder: #6c757d;
+    --border-color: #444444;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base */
+html, body {
+  height: 100%;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+}
+
+/* App Container */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* ============================================
+   Header
+   ============================================ */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* Status indicator */
+.status {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.status.saved {
+  color: var(--success-color);
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+button {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--accent-color);
+  color: white;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--border-color);
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
+.btn-icon:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+}
+
+/* ============================================
+   Editor Container
+   ============================================ */
+.editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: var(--editor-max-width);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  overflow-y: auto;
+}
+
+/* Title Input */
+.title-input {
+  width: 100%;
+  padding: var(--spacing-sm) 0;
+  font-family: var(--font-sans);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.title-input::placeholder {
+  color: var(--text-placeholder);
+}
+
+/* Tags Input */
+.tags-input {
+  width: 100%;
+  padding: var(--spacing-sm) 0;
+  margin-bottom: var(--spacing-md);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.tags-input::placeholder {
+  color: var(--text-placeholder);
+}
+
+/* ============================================
+   Formatting Toolbar
+   ============================================ */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) 0;
+  margin-bottom: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.toolbar button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.toolbar button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.toolbar button.active {
+  background-color: var(--bg-tertiary);
+  color: var(--accent-color);
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background-color: var(--border-color);
+  margin: 0 var(--spacing-xs);
+}
+
+/* ============================================
+   WYSIWYG Editor
+   ============================================ */
+.editor {
+  flex: 1;
+  min-height: 300px;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-placeholder);
+  pointer-events: none;
+}
+
+/* Editor content styling */
+.editor h2 {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 600;
+  margin: var(--spacing-lg) 0 var(--spacing-md) 0;
+}
+
+.editor h3 {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 600;
+  margin: var(--spacing-lg) 0 var(--spacing-md) 0;
+}
+
+.editor p {
+  margin-bottom: var(--spacing-md);
+}
+
+.editor ul, .editor ol {
+  margin-bottom: var(--spacing-md);
+  padding-left: var(--spacing-lg);
+}
+
+.editor li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.editor blockquote {
+  margin: var(--spacing-md) 0;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-left: 4px solid var(--accent-color);
+  background-color: var(--bg-secondary);
+  font-style: italic;
+}
+
+.editor a {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+.editor code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 2px 6px;
+  background-color: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+.editor pre {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: var(--spacing-md);
+  background-color: var(--bg-tertiary);
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-bottom: var(--spacing-md);
+}
+
+/* ============================================
+   Drafts Panel
+   ============================================ */
+.drafts-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 320px;
+  height: 100vh;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  overflow-y: auto;
+  transition: transform 0.2s ease;
+}
+
+.drafts-panel.hidden {
+  transform: translateX(-100%);
+}
+
+.drafts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.drafts-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.drafts-list {
+  padding: var(--spacing-md);
+}
+
+.draft-item {
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.draft-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.draft-item h3 {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: var(--spacing-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.draft-item p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.draft-item time {
+  font-size: 12px;
+  color: var(--text-placeholder);
+}
+
+.no-drafts {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: var(--spacing-xl);
+}
+
+/* ============================================
+   Modal
+   ============================================ */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background-color: var(--bg-primary);
+  padding: var(--spacing-xl);
+  border-radius: 12px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-content h2 {
+  font-size: 24px;
+  margin-bottom: var(--spacing-md);
+}
+
+.modal-content p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.post-link {
+  display: inline-block;
+  margin-bottom: var(--spacing-lg);
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (max-width: 768px) {
+  .header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .editor-container {
+    padding: var(--spacing-md);
+  }
+  
+  .title-input {
+    font-size: 24px;
+  }
+  
+  .editor {
+    font-size: 16px;
+  }
+}
+
+/* ============================================
+   Focus Mode (optional - toggle with JS)
+   ============================================ */
+.focus-mode .header,
+.focus-mode .toolbar {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.focus-mode:hover .header,
+.focus-mode:hover .toolbar,
+.focus-mode .header:focus-within,
+.focus-mode .toolbar:focus-within {
+  opacity: 1;
+}
+
+/* ============================================
+   Print styles
+   ============================================ */
+@media print {
+  .header, .toolbar, .drafts-panel, .modal {
+    display: none;
+  }
+  
+  .editor-container {
+    max-width: 100%;
+    padding: 0;
+  }
+}

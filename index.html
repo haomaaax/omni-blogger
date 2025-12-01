@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Editor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <button id="btn-drafts" class="btn-icon" title="View Drafts">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          <span>Drafts</span>
+        </button>
+      </div>
+      <div class="header-right">
+        <span id="status" class="status"></span>
+        <button id="btn-save" class="btn-secondary">Save Draft</button>
+        <button id="btn-publish" class="btn-primary">✨ Publish</button>
+      </div>
+    </header>
+
+    <!-- Main Editor -->
+    <main class="editor-container">
+      <!-- Title Input -->
+      <input 
+        type="text" 
+        id="post-title" 
+        class="title-input" 
+        placeholder="Post title..."
+        autocomplete="off"
+      >
+
+      <!-- Tags Input -->
+      <input 
+        type="text" 
+        id="post-tags" 
+        class="tags-input" 
+        placeholder="Tags (comma separated): thoughts, running, qa..."
+        autocomplete="off"
+      >
+
+      <!-- Formatting Toolbar -->
+      <div class="toolbar">
+        <button type="button" data-command="bold" title="Bold (⌘B)"><strong>B</strong></button>
+        <button type="button" data-command="italic" title="Italic (⌘I)"><em>I</em></button>
+        <span class="toolbar-divider"></span>
+        <button type="button" data-command="h2" title="Heading">H2</button>
+        <button type="button" data-command="h3" title="Subheading">H3</button>
+        <span class="toolbar-divider"></span>
+        <button type="button" data-command="ul" title="Bullet List">•</button>
+        <button type="button" data-command="ol" title="Numbered List">1.</button>
+        <span class="toolbar-divider"></span>
+        <button type="button" data-command="quote" title="Quote">"</button>
+        <button type="button" data-command="link" title="Insert Link">🔗</button>
+        <button type="button" data-command="code" title="Code">&lt;/&gt;</button>
+      </div>
+
+      <!-- WYSIWYG Editor -->
+      <div 
+        id="editor" 
+        class="editor" 
+        contenteditable="true"
+        data-placeholder="Start writing..."
+      ></div>
+    </main>
+
+    <!-- Drafts Panel (hidden by default) -->
+    <aside id="drafts-panel" class="drafts-panel hidden">
+      <div class="drafts-header">
+        <h2>Drafts</h2>
+        <button id="btn-close-drafts" class="btn-icon">✕</button>
+      </div>
+      <div id="drafts-list" class="drafts-list">
+        <!-- Drafts will be loaded here -->
+      </div>
+    </aside>
+
+    <!-- Publish Modal -->
+    <div id="publish-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>🎉 Published!</h2>
+        <p>Your post is now live.</p>
+        <a id="post-link" href="#" target="_blank" class="post-link">View Post →</a>
+        <button id="btn-close-modal" class="btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="editor.js"></script>
+</body>
+</html>
