@@ -18,22 +18,22 @@
 ### 1. Create Required Accounts
 
 #### 1.1 GitHub Account (Code Repository)
-- [ ] Go to https://github.com/signup
-- [ ] Create a free account (if you don't have one)
-- [ ] Verify your email address
-- [ ] Complete GitHub profile setup
+- [x] Go to https://github.com/signup
+- [x] Create a free account (if you don't have one)
+- [x] Verify your email address
+- [x] Complete GitHub profile setup
 
 #### 1.2 Cloudflare Account (Hosting Platform)
-- [ ] Go to https://dash.cloudflare.com/sign-up
-- [ ] Create a free account
-- [ ] Verify your email address
-- [ ] Log into Cloudflare dashboard
+- [x] Go to https://dash.cloudflare.com/sign-up
+- [x] Create a free account
+- [x] Verify your email address
+- [x] Log into Cloudflare dashboard
 
 #### 1.3 Gandi Domain (Already Have!)
 - [x] Domain registered on Gandi.net
-- [ ] Log into Gandi dashboard: https://admin.gandi.net
-- [ ] Locate your domain
-- [ ] Note down your domain name
+- [x] Log into Gandi dashboard: https://admin.gandi.net
+- [x] Locate your domain
+- [x] Note down your domain name
 
 ---
 
@@ -55,26 +55,26 @@ git init
   ```
 
 #### 2.3 Update Hugo Configuration
-- [ ] Edit `hugo.toml`:
-  - [ ] Set `baseURL = "https://yourdomain.com"` (use your actual domain)
-  - [ ] Verify `title` is set correctly
-  - [ ] Add `publishDir = "public"`
+- [x] Edit `hugo.toml`:
+  - [x] Set `baseURL = "https://yourdomain.com"` (use your actual domain)
+  - [x] Verify `title` is set correctly
+  - [x] Add `publishDir = "public"`
 
 #### 2.4 Test Build Locally
-- [ ] Run: `hugo --minify`
-- [ ] Verify `public/` folder is created
-- [ ] Check for any build errors
+- [x] Run: `hugo --minify`
+- [x] Verify `public/` folder is created
+- [x] Check for any build errors
 
 ---
 
 ### 3. Push Blog to GitHub
 
 #### 3.1 Create GitHub Repository
-- [ ] Go to https://github.com/new
-- [ ] Repository name: `my-blog` (or any name you prefer)
-- [ ] Set to **Public** (required for Cloudflare Pages free tier)
-- [ ] Do NOT initialize with README (we already have files)
-- [ ] Click "Create repository"
+- [x] Go to https://github.com/new
+- [x] Repository name: `my-blog` (or any name you prefer)
+- [x] Set to **Public** (required for Cloudflare Pages free tier)
+- [x] Do NOT initialize with README (we already have files)
+- [x] Click "Create repository"
 
 #### 3.2 Push Code to GitHub
 ```bash
@@ -85,70 +85,70 @@ git branch -M main
 git remote add origin https://github.com/YOUR-USERNAME/my-blog.git
 git push -u origin main
 ```
-- [ ] Run the commands above (replace YOUR-USERNAME)
-- [ ] Verify code appears on GitHub
-- [ ] Check that themes/PaperMod appears (as submodule)
+- [x] Run the commands above (replace YOUR-USERNAME)
+- [x] Verify code appears on GitHub
+- [x] Check that themes/PaperMod appears (as submodule)
 
 ---
 
 ### 4. Deploy to Cloudflare Pages
 
 #### 4.1 Connect GitHub to Cloudflare
-- [ ] Log into Cloudflare dashboard: https://dash.cloudflare.com
-- [ ] Click "Pages" in the left sidebar
-- [ ] Click "Create a project"
-- [ ] Click "Connect to Git"
-- [ ] Select "GitHub"
-- [ ] Authorize Cloudflare to access GitHub
-- [ ] Select your blog repository (`my-blog`)
+- [x] Log into Cloudflare dashboard: https://dash.cloudflare.com
+- [x] Click "Pages" in the left sidebar
+- [x] Click "Create a project"
+- [x] Click "Connect to Git"
+- [x] Select "GitHub"
+- [x] Authorize Cloudflare to access GitHub
+- [x] Select your blog repository (`my-blog`)
 
 #### 4.2 Configure Build Settings
-- [ ] Project name: `my-blog` (or preferred name)
-- [ ] Production branch: `main`
-- [ ] Framework preset: Select **"Hugo"**
-- [ ] Build command: `hugo --minify`
-- [ ] Build output directory: `public`
-- [ ] Click "Save and Deploy"
+- [x] Project name: `my-blog` (or preferred name)
+- [x] Production branch: `main`
+- [x] Framework preset: Select **"Hugo"**
+- [x] Build command: `hugo --minify`
+- [x] Build output directory: `public`
+- [x] Click "Save and Deploy"
 
 #### 4.3 Wait for First Deployment
-- [ ] Watch build logs (takes 1-3 minutes)
-- [ ] Verify build succeeds
-- [ ] Note your Cloudflare Pages URL: `your-project.pages.dev`
-- [ ] Test the site at that URL
+- [x] Watch build logs (takes 1-3 minutes)
+- [x] Verify build succeeds
+- [x] Note your Cloudflare Pages URL: `your-project.pages.dev`
+- [x] Test the site at that URL
 
 ---
 
 ### 5. Set Up Custom Domain
 
 #### 5.1 Add Domain to Cloudflare Pages
-- [ ] In Cloudflare Pages project, click "Custom domains"
-- [ ] Click "Set up a custom domain"
-- [ ] Enter your domain: `yourdomain.com`
-- [ ] Click "Continue"
-- [ ] Cloudflare will show you DNS records to add
+- [x] In Cloudflare Pages project, click "Custom domains"
+- [x] Click "Set up a custom domain"
+- [x] Enter your domain: `yourdomain.com`
+- [x] Click "Continue"
+- [x] Cloudflare will show you DNS records to add
 
 #### 5.2 Option A: Transfer DNS to Cloudflare (Recommended)
 **Easiest and fastest option**
 
-- [ ] In Cloudflare dashboard, click "Add site"
-- [ ] Enter your domain name
-- [ ] Select "Free" plan
-- [ ] Cloudflare will scan your existing DNS records
-- [ ] Review DNS records, click "Continue"
-- [ ] Cloudflare provides nameservers (e.g., `chad.ns.cloudflare.com`)
-- [ ] Copy the two nameserver addresses
+- [x] In Cloudflare dashboard, click "Add site"
+- [x] Enter your domain name
+- [x] Select "Free" plan
+- [x] Cloudflare will scan your existing DNS records
+- [x] Review DNS records, click "Continue"
+- [x] Cloudflare provides nameservers (e.g., `chad.ns.cloudflare.com`)
+- [x] Copy the two nameserver addresses
 
 **Update Nameservers at Gandi:**
-- [ ] Log into Gandi: https://admin.gandi.net
-- [ ] Go to your domain → "Nameservers"
-- [ ] Click "Change nameservers"
-- [ ] Select "External nameservers"
-- [ ] Paste Cloudflare nameservers
-- [ ] Save changes
-- [ ] Wait for propagation (15 mins - 48 hours, usually < 1 hour)
+- [x] Log into Gandi: https://admin.gandi.net
+- [x] Go to your domain → "Nameservers"
+- [x] Click "Change nameservers"
+- [x] Select "External nameservers"
+- [x] Paste Cloudflare nameservers
+- [x] Save changes
+- [x] Wait for propagation (15 mins - 48 hours, usually < 1 hour)
 
 #### 5.2 Option B: Keep DNS at Gandi (Manual Setup)
-**If you prefer to keep Gandi DNS**
+**If you prefer to keep Gandi DNS** >>> SKIP
 
 - [ ] Log into Gandi dashboard
 - [ ] Go to your domain → DNS Records
@@ -171,58 +171,58 @@ git push -u origin main
 ### 6. Verify Deployment
 
 #### 6.1 Check DNS Propagation
-- [ ] Go to https://dnschecker.org
-- [ ] Enter your domain
-- [ ] Verify records point to Cloudflare
-- [ ] Check both `yourdomain.com` and `www.yourdomain.com`
+- [x] Go to https://dnschecker.org
+- [x] Enter your domain
+- [x] Verify records point to Cloudflare
+- [x] Check both `yourdomain.com` and `www.yourdomain.com`
 
 #### 6.2 Test Your Live Site
-- [ ] Open `https://yourdomain.com` in browser
-- [ ] Verify site loads correctly
-- [ ] Test `https://www.yourdomain.com`
-- [ ] Verify HTTPS is working (padlock icon)
-- [ ] Test on mobile device
-- [ ] Check all pages work
+- [x] Open `https://yourdomain.com` in browser
+- [x] Verify site loads correctly
+- [x] Test `https://www.yourdomain.com`
+- [x] Verify HTTPS is working (padlock icon)
+- [x] Test on mobile device
+- [x] Check all pages work
 
 #### 6.3 Verify Auto-Deployment
-- [ ] Make a small change to your blog locally
-- [ ] Commit and push to GitHub:
+- [x] Make a small change to your blog locally
+- [x] Commit and push to GitHub:
   ```bash
   cd ~/sparkler/my-blog
   git add .
   git commit -m "Test auto-deployment"
   git push
   ```
-- [ ] Watch Cloudflare Pages dashboard
-- [ ] Verify new deployment starts automatically
-- [ ] Check live site updates after build completes
+- [x] Watch Cloudflare Pages dashboard
+- [x] Verify new deployment starts automatically
+- [x] Check live site updates after build completes
 
 ---
 
 ### 7. Update Editor Configuration
 
 #### 7.1 Update editor.js
-- [ ] Open `~/sparkler/omni-blogger/editor.js`
-- [ ] Change `blogUrl` from `http://localhost:1313` to `https://yourdomain.com`
-- [ ] Save file
+- [x] Open `~/sparkler/omni-blogger/editor.js`
+- [x] Change `blogUrl` from `http://localhost:1313` to `https://yourdomain.com`
+- [x] Save file
 
 #### 7.2 Update server.js (Optional - Auto-deploy)
 If you want "Publish" button to auto-push to GitHub:
-- [ ] Open `~/sparkler/omni-blogger/server.js`
-- [ ] Update `deployCommand`:
+- [x] Open `~/sparkler/omni-blogger/server.js`
+- [x] Update `deployCommand`:
   ```javascript
   deployCommand: 'cd /Users/YOUR_USERNAME/sparkler/my-blog && git add -A && git commit -m "New post" && git push'
   ```
-- [ ] Replace YOUR_USERNAME with your actual username
-- [ ] Save file
-- [ ] Restart editor server: `node server.js`
+- [x] Replace YOUR_USERNAME with your actual username
+- [x] Save file
+- [x] Restart editor server: `node server.js`
 
 #### 7.3 Test Publishing from Editor
-- [ ] Open editor: http://localhost:3000
-- [ ] Write a test post
-- [ ] Click "Publish"
-- [ ] Check Cloudflare Pages dashboard for new deployment
-- [ ] Verify post appears on live site
+- [x] Open editor: http://localhost:3000
+- [x] Write a test post
+- [x] Click "Publish"
+- [x] Check Cloudflare Pages dashboard for new deployment
+- [x] Verify post appears on live site
 
 ---
 

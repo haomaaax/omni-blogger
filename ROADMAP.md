@@ -45,9 +45,9 @@ Enable draft syncing across Mac and iPhone while maintaining current UX.
 ### Tasks
 
 #### 1.1 Set Up Supabase Project (15 mins)
-- [ ] Go to https://supabase.com and create free account
-- [ ] Create new project: `omni-blogger-drafts`
-- [ ] Note down:
+- [x] Go to https://supabase.com and create free account
+- [x] Create new project: `omni-blogger-drafts`
+- [x] Note down:
   - Project URL (e.g., `https://xxx.supabase.co`)
   - Anon public key
   - Service role key (keep private!)
