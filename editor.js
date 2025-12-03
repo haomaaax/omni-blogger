@@ -4,16 +4,24 @@
    ============================================ */
 
 // ============================================
-// Configuration
+// Configuration - Loaded from server
 // ============================================
-const CONFIG = {
-  // Update this to your Hugo blog path
-  blogPath: '/Users/your_domain/myblog',
-  // Update this to your blog URL
-  blogUrl: 'https://your_domain.com',
-  // API endpoint (local server)
+let CONFIG = {
+  blogUrl: 'http://localhost:1313', // Default fallback
   apiUrl: 'http://localhost:3000'
 };
+
+// Load config from server
+async function loadConfig() {
+  try {
+    const response = await fetch('http://localhost:3000/config');
+    const serverConfig = await response.json();
+    CONFIG = { ...CONFIG, ...serverConfig };
+    console.log('✅ Config loaded from server');
+  } catch (error) {
+    console.warn('⚠️ Could not load config from server, using defaults');
+  }
+}
 
 // ============================================
 // DOM Elements
@@ -495,37 +503,40 @@ function closeModal() {
 // ============================================
 // Initialize App
 // ============================================
-function init() {
+async function init() {
+  // Load config from server first
+  await loadConfig();
+
   initToolbar();
   initKeyboardShortcuts();
   initAutoSave();
-  
+
   // Event listeners
   elements.btnSave.addEventListener('click', saveDraft);
   elements.btnPublish.addEventListener('click', publishPost);
   elements.btnDrafts.addEventListener('click', openDraftsPanel);
   elements.btnCloseDrafts.addEventListener('click', closeDraftsPanel);
   elements.btnCloseModal.addEventListener('click', closeModal);
-  
+
   // Close modal on background click
   elements.publishModal.addEventListener('click', (e) => {
     if (e.target === elements.publishModal) {
       closeModal();
     }
   });
-  
+
   // Close drafts panel on outside click
   document.addEventListener('click', (e) => {
-    if (!elements.draftsPanel.contains(e.target) && 
+    if (!elements.draftsPanel.contains(e.target) &&
         !elements.btnDrafts.contains(e.target) &&
         !elements.draftsPanel.classList.contains('hidden')) {
       closeDraftsPanel();
     }
   });
-  
+
   // Focus editor
   elements.editor.focus();
-  
+
   console.log('Blog Editor initialized');
 }
 

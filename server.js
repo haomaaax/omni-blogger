@@ -9,21 +9,23 @@ const path = require('path');
 const { exec } = require('child_process');
 
 // ============================================
-// CONFIGURATION - UPDATE THESE!
+// CONFIGURATION - Load from config.json
 // ============================================
+let userConfig = {};
+try {
+  const configPath = path.join(__dirname, 'config.json');
+  const configFile = fs.readFileSync(configPath, 'utf8');
+  userConfig = JSON.parse(configFile);
+} catch (error) {
+  console.error('❌ Error: config.json not found!');
+  console.error('Please copy config.example.json to config.json and update your settings.');
+  process.exit(1);
+}
+
 const CONFIG = {
-  // Port for the server
   port: 3000,
-  
-  // Path to your Hugo blog folder
-  blogPath: '/Users/yourname/myblog',
-  
-  // Path to the editor files (this folder)
   editorPath: __dirname,
-  
-  // Deploy command (runs after hugo build)
-  // Set to null to skip deployment
-  deployCommand: null, // e.g., './deploy.sh' or 'rsync -avz --delete public/ user@host:~/www/'
+  ...userConfig
 };
 
 // ============================================
@@ -208,9 +210,17 @@ const server = http.createServer((req, res) => {
   if (url.pathname === '/publish' && req.method === 'POST') {
     return handlePublish(req, res);
   }
-  
+
   if (url.pathname === '/posts' && req.method === 'GET') {
     return handleListPosts(res);
+  }
+
+  // Serve client config
+  if (url.pathname === '/config' && req.method === 'GET') {
+    return sendJSON(res, 200, {
+      blogUrl: CONFIG.blogUrl,
+      apiUrl: CONFIG.apiUrl
+    });
   }
   
   // Serve static files

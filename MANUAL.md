@@ -167,41 +167,44 @@ echo "theme = 'PaperMod'" >> hugo.toml
 - PaperMod: `https://github.com/adityatelange/hugo-PaperMod.git`
 - Ananke: `https://github.com/theNewDynamic/gohugo-theme-ananke.git`
 
-### Step 3: Configure the Server
+### Step 3: Create Configuration File
 
-Edit `server.js` and update the CONFIG section (around line 14):
+The editor uses a `config.json` file for personal settings (not committed to git).
 
-```javascript
-const CONFIG = {
-  port: 3000,
+1. **Copy the example config**:
+   ```bash
+   cd ~/projects/omni-blogger
+   cp config.example.json config.json
+   ```
 
-  // ⚠️ UPDATE THIS to your Hugo blog folder (use absolute path)
-  blogPath: '/Users/YOUR_USERNAME/projects/my-blog',
+2. **Edit `config.json`** with your settings:
+   ```json
+   {
+     "blogPath": "/Users/YOUR_USERNAME/projects/my-blog",
+     "blogUrl": "http://localhost:1313",
+     "apiUrl": "http://localhost:3000",
+     "deployCommand": null
+   }
+   ```
 
-  editorPath: __dirname,
+3. **Update the values**:
+   - **blogPath**: Absolute path to your Hugo blog folder
+   - **blogUrl**: Your blog URL (use `http://localhost:1313` for local preview, or `https://yourdomain.com` when deployed)
+   - **apiUrl**: Editor server URL (usually `http://localhost:3000`)
+   - **deployCommand**:
+     - Set to `null` for manual deployment
+     - Or set to a command that commits and pushes to GitHub:
+       ```json
+       "deployCommand": "cd /Users/YOUR_USERNAME/projects/my-blog && git add -A && git commit -m \"New post\" && git push"
+       ```
 
-  // ⚠️ UPDATE THIS for auto-deploy (or set to null for local-only)
-  deployCommand: null,  // e.g., './deploy.sh' when ready to deploy
-};
-```
+**Why config.json?**
+- ✅ Keeps personal paths private (not in git)
+- ✅ Easy to set up (copy example, fill in values)
+- ✅ Standard practice for local configuration
+- ✅ One file to update all settings
 
-### Step 4: Configure the Client
-
-Edit `editor.js` and update the CONFIG section (around line 9):
-
-```javascript
-const CONFIG = {
-  // ⚠️ UPDATE THIS to your Hugo blog path (use absolute path)
-  blogPath: '/Users/YOUR_USERNAME/projects/my-blog',
-
-  // ⚠️ UPDATE THIS to your blog URL (use localhost:1313 for local preview)
-  blogUrl: 'http://localhost:1313',
-
-  apiUrl: 'http://localhost:3000'
-};
-```
-
-### Step 5: Start the Editor Server
+### Step 4: Start the Editor Server
 
 ```bash
 cd ~/projects/omni-blogger  # Adjust path to where you installed it
@@ -217,7 +220,9 @@ You should see:
 ╚════════════════════════════════════════╝
 ```
 
-### Step 6: (Optional) Start Hugo Preview Server
+If you see an error about `config.json not found`, make sure you completed Step 3.
+
+### Step 5: (Optional) Start Hugo Preview Server
 
 In a **second terminal**, start Hugo's development server to preview your blog:
 
@@ -228,7 +233,7 @@ hugo server
 
 Your blog preview will be available at **http://localhost:1313**
 
-### Step 7: Start Writing!
+### Step 6: Start Writing!
 
 Open your browser and go to:
 ```
@@ -291,43 +296,50 @@ If the server isn't running when you click Publish:
 
 ## Configuration
 
-### Server Configuration (server.js)
+### Using config.json (Recommended)
 
-```javascript
-const CONFIG = {
-  // Server port
-  port: 3000,
+All configuration is managed through `config.json` (not committed to git). This keeps your personal settings private.
 
-  // Path to your Hugo blog (use absolute path, adjust to your setup)
-  blogPath: '/Users/YOUR_USERNAME/projects/my-blog',
+**Configuration file**: `config.json`
 
-  // Path to editor files (usually __dirname)
-  editorPath: __dirname,
-
-  // Deploy command - runs after Hugo build
-  // Examples:
-  // deployCommand: './deploy.sh',
-  // deployCommand: 'rsync -avz --delete public/ user@server:~/www/',
-  // deployCommand: 'firebase deploy',
-  deployCommand: null,  // Skip deployment (local only)
-};
+```json
+{
+  "blogPath": "/Users/YOUR_USERNAME/projects/my-blog",
+  "blogUrl": "https://yourdomain.com",
+  "apiUrl": "http://localhost:3000",
+  "deployCommand": null
+}
 ```
 
-### Client Configuration (editor.js)
+**Settings:**
 
-```javascript
-const CONFIG = {
-  // Your Hugo blog path (use absolute path, adjust to your setup)
-  blogPath: '/Users/YOUR_USERNAME/projects/my-blog',
+| Setting | Description | Example |
+|---------|-------------|---------|
+| `blogPath` | Absolute path to your Hugo blog | `/Users/max/projects/my-blog` |
+| `blogUrl` | Your blog's public URL | `https://yourdomain.com` or `http://localhost:1313` |
+| `apiUrl` | Editor server URL | `http://localhost:3000` |
+| `deployCommand` | Command to run after Hugo build | See examples below |
 
-  // Your blog URL (for the "View Post" link after publishing)
-  // Use localhost:1313 for local preview, or your live URL for production
-  blogUrl: 'http://localhost:1313',
+**Deploy Command Examples:**
 
-  // API endpoint (should match server port)
-  apiUrl: 'http://localhost:3000'
-};
+```json
+// No deployment (manual)
+"deployCommand": null
+
+// Auto-commit and push to GitHub
+"deployCommand": "cd /Users/YOUR_USERNAME/projects/my-blog && git add -A && git commit -m \"New post\" && git push"
+
+// Custom deploy script
+"deployCommand": "./deploy.sh"
+
+// Rsync to server
+"deployCommand": "rsync -avz --delete public/ user@server:~/www/"
+
+// Firebase
+"deployCommand": "firebase deploy"
 ```
+
+**Note:** The server (`server.js`) and client (`editor.js`) both read from `config.json`. The server loads it at startup, and the client fetches it via the `/config` API endpoint.
 
 ---
 

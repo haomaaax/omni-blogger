@@ -7,3 +7,6 @@ node_modules/
 # Editor
 *.log
 .env
+
+# Configuration (personal settings)
+config.json

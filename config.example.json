@@ -1,0 +1,6 @@
+{
+  "blogPath": "/Users/YOUR_USERNAME/projects/my-blog",
+  "blogUrl": "https://yourdomain.com",
+  "apiUrl": "http://localhost:3000",
+  "deployCommand": null
+}
