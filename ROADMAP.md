@@ -1,434 +1,202 @@
-# Blog Editor Roadmap: PWA + Cloud Sync
+# Blog Editor Roadmap: Single-User Web Editor
 
 ## Vision
-Build a sustainable, cross-platform blog editor that works seamlessly on Mac and iPhone for the next 5-10 years.
+Transform the local blog editor into a web-based application accessible from any device, without requiring a local server.
+
+**Primary Goal:** Enable writing and publishing from anywhere (Mac, iPhone, any browser) without running `node server.js`.
+
+**Secondary Goal:** Make it easy to demo/share with non-technical people.
 
 ---
 
-## Architecture Decision
+## Current State vs. Future State
 
-### Chosen Approach: Progressive Web App (PWA) + Cloud Sync
-
-**Why PWA?**
-- ✅ Works on Mac and iPhone from same codebase
-- ✅ No app store approval needed
-- ✅ Updates instantly (no app updates)
-- ✅ Can be "installed" on home screen
-- ✅ Works offline with service workers
-- ✅ Open web standards (future-proof)
-
-**Why Supabase for Drafts?**
-- ✅ Free tier: 500MB database, 2GB bandwidth/month
-- ✅ Real-time sync across devices
-- ✅ Built-in authentication
-- ✅ PostgreSQL (can export data anytime)
-- ✅ Simple API (REST + realtime subscriptions)
-
-**Data Strategy:**
+### ✅ Current (Local Editor)
 ```
-Drafts (Work in Progress)
-└─> Supabase Database (synced across devices)
-
-Published Posts (Permanent Content)
-└─> Git Repository → Cloudflare Pages
+Your Mac (localhost:3000)
+  ↓ Run: node server.js
+  ↓ Write post
+  ↓ Click Publish
+  ↓ Auto-commits to GitHub
+  ↓ Cloudflare Pages builds
+  ↓ Live at sparkler.club
 ```
+
+**Limitations:**
+- ❌ Must be at your Mac
+- ❌ Must run local server
+- ❌ Can't access from iPhone
+- ❌ Hard to demo to non-technical people
+
+### 🎯 Future (Web Editor)
+```
+Any Device (sparkler.club/editor)
+  ↓ Visit URL, login with passkey
+  ↓ Write post
+  ↓ Click Publish
+  ↓ Cloudflare Worker commits to GitHub
+  ↓ Cloudflare Pages builds
+  ↓ Live at sparkler.club
+```
+
+**Benefits:**
+- ✅ Access from any device (Mac, iPhone, iPad)
+- ✅ No local server needed
+- ✅ Easy to demo (just share URL)
+- ✅ Write from anywhere
+- ✅ Single-user (you), but shareable UI
 
 ---
 
 ## Implementation Phases
 
-## 📱 Phase 1: Cloud-Synced Drafts (Week 1-2)
+## 🌐 Phase 1: Deploy Editor to Web (Week 1)
 
 ### Goal
-Enable draft syncing across Mac and iPhone while maintaining current UX.
+Make the editor accessible at `sparkler.club/editor` without local server.
 
-### Tasks
+### 1.1 Set Up Cloudflare Pages for Editor (1 hour)
 
-#### 1.1 Set Up Supabase Project (15 mins)
-- [x] Go to https://supabase.com and create free account
-- [x] Create new project: `omni-blogger-drafts`
-- [x] Note down:
-  - Project URL (e.g., `https://xxx.supabase.co`)
-  - Anon public key
-  - Service role key (keep private!)
+**Option A: Same Project, Different Path**
+- [ ] Add `editor/` folder to your blog repo
+- [ ] Copy editor files to `editor/` folder
+- [ ] Configure Cloudflare Pages to serve from root
+- [ ] Hugo ignores `/editor` path
+- [ ] Access at: `sparkler.club/editor/`
 
-#### 1.2 Create Database Schema (30 mins)
-```sql
--- Run in Supabase SQL Editor
+**Option B: Separate Project (Recommended)**
+- [ ] Create new Cloudflare Pages project for editor
+- [ ] Deploy omni-blogger repo to Cloudflare Pages
+- [ ] Configure custom domain: `editor.sparkler.club`
+- [ ] Access at: `editor.sparkler.club`
 
--- Enable Row Level Security
-create table drafts (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users(id) on delete cascade,
-  title text not null,
-  tags text,
-  content text not null,
-  created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now()
-);
+**Commands:**
+```bash
+# Push omni-blogger to GitHub (already done)
+cd ~/sparkler/omni-blogger
+git push
 
--- Enable RLS
-alter table drafts enable row level security;
-
--- Policy: Users can only see their own drafts
-create policy "Users can view own drafts"
-  on drafts for select
-  using (auth.uid() = user_id);
-
-create policy "Users can insert own drafts"
-  on drafts for insert
-  with check (auth.uid() = user_id);
-
-create policy "Users can update own drafts"
-  on drafts for update
-  using (auth.uid() = user_id);
-
-create policy "Users can delete own drafts"
-  on drafts for delete
-  using (auth.uid() = user_id);
-
--- Auto-update updated_at timestamp
-create or replace function update_updated_at_column()
-returns trigger as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$ language plpgsql;
-
-create trigger update_drafts_updated_at
-  before update on drafts
-  for each row
-  execute function update_updated_at_column();
+# In Cloudflare Dashboard:
+# Pages → Create → Connect to Git
+# Select omni-blogger repo
+# Build settings: NONE (static files only)
+# Deploy
 ```
 
-#### 1.3 Add Supabase Client Library (10 mins)
-```html
-<!-- Add to index.html before editor.js -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-```
+### 1.2 Update Editor for Web Deployment (2 hours)
 
-#### 1.4 Add Authentication UI (2-3 hours)
-- [ ] Create simple login modal
-- [ ] Add email/password or magic link auth
-- [ ] Store session in localStorage
-- [ ] Show user email in header when logged in
-- [ ] Add logout button
+Currently the editor expects `config.json` from local filesystem. For web deployment:
 
-**New file:** `auth.js`
+**Create `config.js` for client-side:**
 ```javascript
-// Initialize Supabase
-const supabase = supabase.createClient(
-  'YOUR_SUPABASE_URL',
-  'YOUR_SUPABASE_ANON_KEY'
-);
-
-// Check if user is logged in
-async function checkAuth() {
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
-}
-
-// Login with email magic link
-async function loginWithEmail(email) {
-  const { error } = await supabase.auth.signInWithOtp({ email });
-  if (error) throw error;
-  alert('Check your email for login link!');
-}
-
-// Logout
-async function logout() {
-  await supabase.auth.signOut();
-  location.reload();
-}
+// config.js - Client-side config (committed to git)
+const CONFIG = {
+  blogUrl: 'https://sparkler.club',
+  apiUrl: 'https://api.sparkler.club', // or Cloudflare Worker URL
+  publishEndpoint: '/publish' // Cloudflare Worker endpoint
+};
 ```
 
-#### 1.5 Migrate Draft Storage (3-4 hours)
-Update `editor.js` to use Supabase instead of localStorage:
+**Update index.html:**
+- [ ] Change `<script src="editor.js">` to load after config
+- [ ] Remove dependency on `/config` endpoint
+- [ ] Use client-side config
 
-**Before (localStorage):**
-```javascript
-function saveDraft() {
-  const drafts = JSON.parse(localStorage.getItem('blog-drafts')) || [];
-  drafts.push({ title, content, ... });
-  localStorage.setItem('blog-drafts', JSON.stringify(drafts));
-}
-```
+**Update editor.js:**
+- [ ] Remove `loadConfig()` function (no server to fetch from)
+- [ ] Use CONFIG directly from `config.js`
+- [ ] Update publish URL to Worker endpoint
 
-**After (Supabase):**
-```javascript
-async function saveDraft() {
-  const user = await checkAuth();
-  if (!user) {
-    alert('Please log in to save drafts');
-    return;
-  }
-
-  const { data, error } = await supabase
-    .from('drafts')
-    .upsert({
-      id: currentDraftId,
-      user_id: user.id,
-      title: elements.title.value,
-      tags: elements.tags.value,
-      content: elements.editor.innerHTML,
-    });
-
-  if (error) throw error;
-  showStatus('Saved to cloud', 'saved');
-}
-```
-
-#### 1.6 Real-time Sync (2 hours)
-```javascript
-// Listen for changes from other devices
-supabase
-  .channel('drafts')
-  .on('postgres_changes',
-    { event: '*', schema: 'public', table: 'drafts' },
-    (payload) => {
-      console.log('Draft updated on another device:', payload);
-      renderDraftsList(); // Refresh drafts list
-    }
-  )
-  .subscribe();
-```
-
-#### 1.7 Migration Tool for Existing Drafts (1 hour)
-```javascript
-// One-time: migrate localStorage drafts to Supabase
-async function migrateLocalDrafts() {
-  const localDrafts = JSON.parse(localStorage.getItem('blog-drafts')) || [];
-  const user = await checkAuth();
-
-  for (const draft of localDrafts) {
-    await supabase.from('drafts').insert({
-      user_id: user.id,
-      title: draft.title,
-      tags: draft.tags,
-      content: draft.content,
-    });
-  }
-
-  console.log('Migrated', localDrafts.length, 'drafts');
-}
-```
-
-### Phase 1 Testing Checklist
-- [ ] Create draft on Mac → See it on iPhone
-- [ ] Edit draft on iPhone → See changes on Mac
-- [ ] Delete draft on Mac → Disappears on iPhone
-- [ ] Works while offline (queues changes)
-- [ ] Login/logout works correctly
+### 1.3 Test Deployment (30 mins)
+- [ ] Visit `editor.sparkler.club` (or `sparkler.club/editor`)
+- [ ] Verify editor loads
+- [ ] Verify WYSIWYG works
+- [ ] Verify drafts save to localStorage
+- [ ] Note: Publishing won't work yet (needs Phase 2)
 
 ---
 
-## 🌐 Phase 2: Progressive Web App (Week 3-4)
+## 🔐 Phase 2: Add Passkey Authentication (Week 2)
 
 ### Goal
-Make editor installable on iPhone home screen and work offline.
+Secure the editor so only you (and invited people) can access it.
 
-### Tasks
+### 2.1 Choose Auth Strategy
 
-#### 2.1 Create PWA Manifest (30 mins)
+**Option A: Cloudflare Access (Easiest)**
+- [ ] Enable Cloudflare Access on `editor.sparkler.club`
+- [ ] Configure allowed emails (just yours)
+- [ ] One-click passkey/Google login
+- [ ] Free tier: 50 users
+- [ ] **Pros:** No code needed, managed by Cloudflare
+- [ ] **Cons:** Requires Cloudflare Zero Trust setup
 
-**New file:** `manifest.json`
-```json
-{
-  "name": "Blog Editor",
-  "short_name": "Editor",
-  "description": "Personal blog writing app",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#007bff",
-  "orientation": "any",
-  "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
-}
-```
+**Option B: Custom Passkey Auth (More Control)**
+- [ ] Use WebAuthn API for passkey
+- [ ] Store authenticated session in localStorage
+- [ ] Challenge/response with Cloudflare Worker
+- [ ] **Pros:** Full control, learn passkey tech
+- [ ] **Cons:** More code to write
 
-Add to `index.html`:
-```html
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#007bff">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-```
+**Recommendation:** Start with Cloudflare Access (Option A)
 
-#### 2.2 Create App Icons (1 hour)
-- [ ] Design 512x512px icon
-- [ ] Generate 192x192px version
-- [ ] Create Apple touch icon (180x180px)
-- [ ] Add to project root
+### 2.2 Implement Cloudflare Access (1-2 hours)
 
-#### 2.3 Add Service Worker for Offline (2-3 hours)
+**Steps:**
+1. [ ] Go to Cloudflare Dashboard → Zero Trust
+2. [ ] Access → Applications → Add Application
+3. [ ] Select "Self-hosted"
+4. [ ] Application domain: `editor.sparkler.club`
+5. [ ] Add policy: Allow emails → your@email.com
+6. [ ] Configure identity provider (Google, GitHub, or Email OTP)
+7. [ ] Save
 
-**New file:** `sw.js`
-```javascript
-const CACHE_NAME = 'blog-editor-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/editor.js',
-  '/auth.js',
-];
+**Test:**
+- [ ] Visit `editor.sparkler.club`
+- [ ] See Cloudflare Access login screen
+- [ ] Login with your email
+- [ ] Access granted → Editor loads
 
-// Install service worker
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
-  );
-});
-
-// Serve from cache, fall back to network
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => response || fetch(event.request))
-  );
-});
-```
-
-Register in `index.html`:
-```javascript
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js');
-}
-```
-
-#### 2.4 Make Responsive for iPhone (3-4 hours)
-
-Update `style.css`:
-```css
-/* Mobile-first adjustments */
-@media (max-width: 768px) {
-  .editor-container {
-    padding: 1rem;
-  }
-
-  .title-input {
-    font-size: 1.5rem;
-  }
-
-  .toolbar {
-    position: sticky;
-    top: 0;
-    background: var(--bg-primary);
-    z-index: 10;
-  }
-
-  .toolbar button {
-    padding: 0.75rem; /* Larger touch targets */
-    font-size: 1rem;
-  }
-
-  .header-right {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .drafts-panel {
-    width: 100%;
-  }
-}
-
-/* Improve touch interactions */
-.editor {
-  -webkit-overflow-scrolling: touch;
-}
-
-button {
-  -webkit-tap-highlight-color: transparent;
-}
-```
-
-#### 2.5 Deploy PWA to Cloudflare Pages (1-2 hours)
-
-**Option A: Subdomain** (editor.yourdomain.com)
-- [ ] Create new Cloudflare Pages project
-- [ ] Point to omni-blogger repo
-- [ ] Set custom domain: `editor.yourdomain.com`
-- [ ] Configure DNS CNAME
-
-**Option B: Same domain, different path** (yourdomain.com/editor)
-- [ ] Add to existing blog deployment
-- [ ] Configure Hugo to ignore /editor path
-- [ ] Deploy editor to /editor subfolder
-
-#### 2.6 Add "Install App" Prompt (1 hour)
-```javascript
-let deferredPrompt;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-
-  // Show install button
-  const installBtn = document.getElementById('install-btn');
-  installBtn.style.display = 'block';
-
-  installBtn.addEventListener('click', async () => {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log('Install outcome:', outcome);
-    deferredPrompt = null;
-  });
-});
-```
-
-### Phase 2 Testing Checklist
-- [ ] Open editor.yourdomain.com on iPhone Safari
-- [ ] See "Add to Home Screen" option
-- [ ] Install to home screen
-- [ ] Open from home screen (standalone mode)
-- [ ] Works offline (airplane mode)
-- [ ] Syncs when back online
-- [ ] Toolbar usable on mobile
-- [ ] Keyboard doesn't cover editor
+### 2.3 Optional: Add More Users (5 mins each)
+- [ ] Add friend's email to allowed list
+- [ ] They login with their email
+- [ ] They can use YOUR editor to publish to YOUR blog
+- [ ] (Multi-tenant comes later if you want)
 
 ---
 
-## 🚀 Phase 3: Serverless Publishing (Week 5-6)
+## ⚡ Phase 3: Serverless Publishing (Week 3)
 
 ### Goal
-Publish directly from iPhone without local server running.
+Enable publishing from web editor using Cloudflare Workers (no local server).
 
-### Tasks
+### 3.1 Create Cloudflare Worker for Publishing (3-4 hours)
 
-#### 3.1 Create Cloudflare Worker for Publishing (3-4 hours)
+**What it does:**
+- Receives post from editor
+- Commits to your GitHub repo
+- Triggers Cloudflare Pages rebuild
 
-**New file:** `worker.js` (in separate repo or same)
+**File: `publish-worker.js`**
 ```javascript
 export default {
   async fetch(request, env) {
     // Only allow POST to /publish
-    if (request.method !== 'POST' || !request.url.endsWith('/publish')) {
-      return new Response('Not found', { status: 404 });
+    if (request.method !== 'POST') {
+      return new Response('Method not allowed', { status: 405 });
     }
-
-    // Verify authentication
-    const authHeader = request.headers.get('Authorization');
-    // TODO: Verify Supabase JWT token
 
     // Get post data
     const { filename, content } = await request.json();
 
+    // Validate
+    if (!filename || !content) {
+      return new Response('Missing data', { status: 400 });
+    }
+
     // Commit to GitHub via API
-    const githubToken = env.GITHUB_TOKEN; // From Cloudflare Workers secret
-    const repo = 'your-username/my-blog';
+    const githubToken = env.GITHUB_TOKEN;
+    const repo = 'haomaaax/my-blog'; // Your blog repo
     const path = `content/posts/${filename}`;
 
     const response = await fetch(
@@ -447,212 +215,214 @@ export default {
     );
 
     if (!response.ok) {
-      return new Response('GitHub API error', { status: 500 });
+      const error = await response.text();
+      return new Response(`GitHub API error: ${error}`, { status: 500 });
     }
 
-    return new Response('Published!', { status: 200 });
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 };
 ```
 
-#### 3.2 Set Up GitHub Personal Access Token
-- [ ] Go to GitHub Settings → Developer settings → Personal access tokens
-- [ ] Create token with `repo` scope
-- [ ] Add to Cloudflare Workers secrets as `GITHUB_TOKEN`
+### 3.2 Deploy Cloudflare Worker (1 hour)
 
-#### 3.3 Update editor.js Publish Function (2 hours)
-```javascript
-async function publishPost() {
-  // ... validation ...
+**Setup:**
+```bash
+# Install Wrangler (Cloudflare CLI)
+npm install -g wrangler
 
-  const user = await checkAuth();
-  if (!user) {
-    alert('Please log in to publish');
-    return;
-  }
+# Login to Cloudflare
+wrangler login
 
-  // Get Supabase session token
-  const { data: { session } } = await supabase.auth.getSession();
+# Create worker project
+mkdir publish-worker
+cd publish-worker
+wrangler init
 
-  try {
-    const response = await fetch('https://publish-worker.your-username.workers.dev/publish', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({
-        filename,
-        content: fullContent,
-      }),
-    });
+# Copy publish-worker.js to src/index.js
 
-    if (!response.ok) throw new Error('Publish failed');
-
-    // Show success
-    showSuccessModal();
-
-    // Delete draft from Supabase
-    await supabase.from('drafts').delete().eq('id', currentDraftId);
-
-  } catch (error) {
-    console.error(error);
-    // Fall back to download
-    downloadMarkdownFile(filename, fullContent);
-  }
-}
+# Deploy
+wrangler deploy
 ```
 
-#### 3.4 Add Cloudflare Pages Build Webhook (30 mins)
-- [ ] Get Cloudflare Pages deploy hook URL
-- [ ] Add to GitHub Actions or trigger from Worker
-- [ ] Auto-deploy on new commits
+**Configure:**
+- [ ] Add GitHub Personal Access Token as secret:
+  ```bash
+  wrangler secret put GITHUB_TOKEN
+  # Paste your GitHub token (with repo scope)
+  ```
+- [ ] Note your Worker URL: `https://publish-worker.YOUR_SUBDOMAIN.workers.dev`
 
-### Phase 3 Testing Checklist
-- [ ] Publish from iPhone
-- [ ] GitHub commit appears automatically
-- [ ] Cloudflare Pages deploys
-- [ ] Post live in ~2 minutes
-- [ ] Draft deleted from Supabase
-- [ ] Works without local server running
+### 3.3 Update Editor to Use Worker (30 mins)
+
+**Update `config.js`:**
+```javascript
+const CONFIG = {
+  blogUrl: 'https://sparkler.club',
+  apiUrl: 'https://publish-worker.YOUR_SUBDOMAIN.workers.dev',
+  publishEndpoint: '/publish'
+};
+```
+
+**No changes needed to `editor.js`** - it already posts to `${CONFIG.apiUrl}/publish`!
+
+### 3.4 Test End-to-End Publishing (15 mins)
+- [ ] Visit `editor.sparkler.club`
+- [ ] Login with passkey
+- [ ] Write test post
+- [ ] Click "✨ Publish"
+- [ ] Wait ~2 minutes
+- [ ] Check https://sparkler.club → Post appears!
 
 ---
 
-## ✨ Phase 4: Polish & Long-term Features (Week 7-8)
+## ✨ Phase 4: Polish & Features (Week 4)
 
 ### Goal
-Make it delightful to use for 5-10 years.
+Improve UX and add quality-of-life features.
 
-### Tasks
+### 4.1 Mobile-Friendly UI (3-4 hours)
+- [ ] Test on iPhone Safari
+- [ ] Adjust toolbar for touch (bigger buttons)
+- [ ] Fix keyboard covering editor
+- [ ] Add viewport meta tag
+- [ ] Test landscape/portrait modes
 
-#### 4.1 Mobile UX Enhancements (3-4 hours)
-- [ ] Swipe to delete draft
-- [ ] Pull to refresh drafts list
-- [ ] Haptic feedback on actions
-- [ ] Better keyboard handling
-- [ ] Paste image from clipboard
+### 4.2 Better Feedback (2 hours)
+- [ ] Add loading spinner during publish
+- [ ] Show "Publishing... please wait ~2 min" message
+- [ ] Add countdown timer (2 minutes)
+- [ ] Success modal with "View Post" link
+- [ ] Error handling (show what went wrong)
 
-#### 4.2 Image Upload Support (4-5 hours)
-- [ ] Add image button to toolbar
-- [ ] Upload to Cloudflare R2 or Hugo static folder
-- [ ] Insert markdown image syntax
-- [ ] Image compression/resizing
-- [ ] Support paste from clipboard
+### 4.3 Draft Persistence (2 hours)
 
-#### 4.3 Draft Search & Organization (2-3 hours)
-- [ ] Search drafts by title/content
-- [ ] Sort by date, title, modified
-- [ ] Archive completed drafts
-- [ ] Export all drafts as JSON backup
+**Current:** Drafts in localStorage (browser-specific)
 
-#### 4.4 Analytics & Monitoring (1-2 hours)
-- [ ] Track active users (Cloudflare Analytics)
-- [ ] Monitor errors (Sentry free tier)
-- [ ] Uptime monitoring (UptimeRobot)
+**Options:**
+- [ ] **Option A:** Keep localStorage (simple, works)
+- [ ] **Option B:** Add Supabase for cloud drafts (original Phase 1)
+- [ ] **Option C:** Save drafts as GitHub commits in `/drafts` folder
 
-#### 4.5 Documentation & Handoff (2-3 hours)
-- [ ] Update MANUAL.md for PWA setup
-- [ ] Document Supabase schema
-- [ ] Document Cloudflare Worker deployment
-- [ ] Create backup/export scripts
-- [ ] Add troubleshooting guide
+**Recommendation:** Keep localStorage for now, add Supabase later if needed.
 
----
+### 4.4 Share with Friends (1 hour)
+- [ ] Add friend's email to Cloudflare Access
+- [ ] Send them link: `editor.sparkler.club`
+- [ ] They login and can publish to YOUR blog
+- [ ] (Their posts appear under your name for now)
 
-## Tech Stack Summary
-
-### Frontend
-- **HTML/CSS/JavaScript** - Core web technologies
-- **ContentEditable API** - WYSIWYG editing
-- **Service Workers** - Offline capability
-- **PWA APIs** - Install to home screen
-
-### Backend/Services
-- **Supabase** - Database + Auth (free tier)
-- **Cloudflare Pages** - PWA hosting (free)
-- **Cloudflare Workers** - Serverless publish API (free tier: 100k req/day)
-- **GitHub** - Content versioning (free)
-
-### Cost Breakdown (Monthly)
-- Supabase: $0 (free tier)
-- Cloudflare Pages: $0 (free)
-- Cloudflare Workers: $0 (within free limits)
-- GitHub: $0 (public repo)
-- Domain (Gandi): ~$15/year
-- **Total: ~$1.25/month** 🎉
+### 4.5 Optional: PWA Features (2-3 hours)
+- [ ] Add `manifest.json` for "Add to Home Screen"
+- [ ] Add service worker for offline editing
+- [ ] Create app icon (512x512)
+- [ ] Test installation on iPhone
 
 ---
 
-## Migration Path from Current System
-
-### Safe Migration Strategy
-1. **Don't break existing workflow** - Keep current editor working
-2. **Add Supabase in parallel** - Both localStorage and Supabase work
-3. **Add migration button** - User chooses when to migrate
-4. **Test on one device first** - Verify Mac works before iPhone
-5. **Gradual rollout** - PWA features added incrementally
-
-### Rollback Plan
-- localStorage code stays in codebase (commented)
-- Can switch back with config flag
-- Export Supabase data to JSON anytime
-- Git history preserves all published posts
-
----
-
-## Success Metrics
+## 📊 Success Metrics
 
 ### Phase 1 Success
-- [ ] Login from Mac
-- [ ] Create draft on Mac
-- [ ] See same draft on iPhone browser
-- [ ] Edit on iPhone, see on Mac
-- [ ] Zero data loss for 1 week
+- [ ] Editor accessible at `editor.sparkler.club`
+- [ ] Loads on Mac, iPhone, any browser
+- [ ] WYSIWYG editing works
+- [ ] Drafts save to localStorage
 
 ### Phase 2 Success
-- [ ] Install PWA on iPhone
-- [ ] Works offline (airplane mode test)
-- [ ] Syncs when back online
-- [ ] Comfortable mobile writing experience
+- [ ] Login required to access editor
+- [ ] Only you (and invited friends) can access
+- [ ] Passkey/email login works smoothly
 
 ### Phase 3 Success
-- [ ] Publish from iPhone
-- [ ] Post live without touching Mac
-- [ ] Publish from coffee shop wifi
-- [ ] Works without local server
+- [ ] Publish button works from web editor
+- [ ] Post appears on sparkler.club within 2 minutes
+- [ ] No local server needed
+- [ ] Works from iPhone
 
-### Final Success (5-10 year vision)
-- [ ] Use daily for 1 month straight
-- [ ] Zero data loss
-- [ ] Under 3 seconds from idea to draft saved
-- [ ] Under 2 minutes from publish to live
-- [ ] Works anywhere, any device
-- [ ] No vendor lock-in (can export everything)
-- [ ] Minimal maintenance needed
+### Phase 4 Success
+- [ ] Comfortable to use on mobile
+- [ ] Shared with at least one friend successfully
+- [ ] No major bugs or UX issues
+
+---
+
+## Alternative: Quick Wins First
+
+If you want to see results faster, here's a condensed plan:
+
+### Week 1: Deploy & Test
+- [ ] Deploy editor to Cloudflare Pages
+- [ ] Add Cloudflare Access (email auth)
+- [ ] Test basic editing from web
+
+### Week 2: Publishing
+- [ ] Create Cloudflare Worker
+- [ ] Connect to GitHub API
+- [ ] Test end-to-end publish
+
+### Week 3: Polish
+- [ ] Mobile UX improvements
+- [ ] Share with one friend
+- [ ] Bug fixes
+
+---
+
+## Future: Multi-Tenant (Optional)
+
+If you later want `sparkler.club/alice` for other people's blogs:
+
+### Phase 5: Multi-Tenant Architecture
+- [ ] Add user management (Supabase Auth)
+- [ ] Each user gets `/username` path
+- [ ] Separate Hugo builds per user
+- [ ] User-specific GitHub repos or database storage
+- [ ] Billing/limits system
+
+**Timeline:** 2-3 months additional work
+
+**Complexity:** High (basically building a SaaS platform)
+
+---
+
+## Cost Breakdown
+
+### Current Costs (Monthly)
+- Cloudflare Pages: $0 (free tier)
+- Domain (sparkler.club): ~$1.25/month
+- **Total: $1.25/month**
+
+### After Web Editor (Monthly)
+- Cloudflare Pages (blog): $0
+- Cloudflare Pages (editor): $0
+- Cloudflare Workers: $0 (free tier: 100k req/day)
+- Cloudflare Access: $0 (free tier: 50 users)
+- Domain: ~$1.25/month
+- **Total: $1.25/month** 🎉
+
+**No cost increase!** Everything uses free tiers.
 
 ---
 
 ## Resources
 
-### Documentation
-- Supabase: https://supabase.com/docs
-- PWA: https://web.dev/progressive-web-apps/
-- Service Workers: https://developers.google.com/web/fundamentals/primers/service-workers
-- Cloudflare Workers: https://developers.cloudflare.com/workers/
-- GitHub API: https://docs.github.com/en/rest
+### Cloudflare
+- Workers: https://developers.cloudflare.com/workers/
+- Access: https://developers.cloudflare.com/cloudflare-one/applications/
+- Pages: https://developers.cloudflare.com/pages/
 
-### Tools
-- PWA Builder: https://www.pwabuilder.com/
-- Icon Generator: https://realfavicongenerator.net/
-- Lighthouse (PWA testing): Chrome DevTools → Lighthouse tab
+### Authentication
+- Cloudflare Access Docs: https://developers.cloudflare.com/cloudflare-one/
+- WebAuthn (Passkey): https://webauthn.guide/
 
-### Similar Projects (inspiration)
-- Bear Notes (Apple) - Clean, synced notes
-- Notion Web - PWA done right
-- Obsidian Publish - Local-first, synced
+### GitHub API
+- Contents API: https://docs.github.com/en/rest/repos/contents
+- Personal Access Tokens: https://github.com/settings/tokens
 
 ---
 
 **Last Updated:** 2025-12-03
-**Status:** Ready to implement
-**Next Action:** Phase 1.1 - Create Supabase account
+**Status:** Ready to implement - Phase 1
+**Next Action:** Deploy editor to Cloudflare Pages

@@ -312,4 +312,185 @@ hugo version
 
 ---
 
-**Last Updated:** 2025-12-02
+## 🌐 Phase 2: Web Editor Deployment (Single-User)
+
+**Goal:** Deploy editor to the web so you (and friends) can access it from any device without running a local server.
+
+**Target URL:** `editor.sparkler.club` or `sparkler.club/editor`
+
+See [ROADMAP.md](ROADMAP.md) for detailed implementation guide.
+
+### 1. Deploy Editor to Cloudflare Pages
+
+#### 1.1 Choose Deployment Method
+- [ ] **Option A:** Separate subdomain (`editor.sparkler.club`) - Recommended
+- [ ] **Option B:** Same domain, different path (`sparkler.club/editor`)
+
+#### 1.2 Deploy to Cloudflare Pages
+- [ ] Go to Cloudflare Dashboard → Pages
+- [ ] Click "Create a project"
+- [ ] Connect to Git → Select `omni-blogger` repo
+- [ ] Build settings: None (static files)
+- [ ] Deploy
+- [ ] Note your pages.dev URL
+
+#### 1.3 Configure Custom Domain
+- [ ] In Cloudflare Pages project → Custom domains
+- [ ] Add custom domain: `editor.sparkler.club`
+- [ ] Wait for DNS to propagate (~5-15 mins)
+
+#### 1.4 Test Web Editor
+- [ ] Visit `editor.sparkler.club`
+- [ ] Verify editor loads
+- [ ] Test WYSIWYG editing
+- [ ] Test draft save to localStorage
+- [ ] Note: Publishing won't work yet (needs Cloudflare Worker)
+
+---
+
+### 2. Add Authentication (Cloudflare Access)
+
+#### 2.1 Set Up Cloudflare Zero Trust
+- [ ] Go to Cloudflare Dashboard → Zero Trust
+- [ ] Access → Applications → Add Application
+- [ ] Select "Self-hosted" application
+- [ ] Application domain: `editor.sparkler.club`
+
+#### 2.2 Configure Access Policy
+- [ ] Add policy: Allow specific emails
+- [ ] Enter your email address
+- [ ] Choose identity provider (Google, GitHub, or Email OTP)
+- [ ] Save and deploy
+
+#### 2.3 Test Authentication
+- [ ] Visit `editor.sparkler.club`
+- [ ] See Cloudflare Access login screen
+- [ ] Login with your email
+- [ ] Access granted → Editor loads
+
+#### 2.4 Add Friends (Optional)
+- [ ] Add friend's email to allowed list
+- [ ] They can login and use YOUR editor
+- [ ] Posts publish to YOUR blog (sparkler.club)
+
+---
+
+### 3. Create Cloudflare Worker for Publishing
+
+#### 3.1 Install Wrangler CLI
+```bash
+npm install -g wrangler
+wrangler login
+```
+
+#### 3.2 Create Worker Project
+```bash
+mkdir publish-worker
+cd publish-worker
+wrangler init
+```
+- [ ] Copy publish-worker code from ROADMAP.md
+- [ ] Update repo name to your blog repo
+
+#### 3.3 Configure GitHub Token
+- [ ] Go to GitHub → Settings → Developer settings → Personal access tokens
+- [ ] Create token with `repo` scope
+- [ ] Copy the token
+- [ ] Run: `wrangler secret put GITHUB_TOKEN`
+- [ ] Paste token when prompted
+
+#### 3.4 Deploy Worker
+```bash
+wrangler deploy
+```
+- [ ] Note your Worker URL: `https://publish-worker.XXXXX.workers.dev`
+
+---
+
+### 4. Connect Editor to Worker
+
+#### 4.1 Create config.js for Web
+- [ ] Create `config.js` in omni-blogger repo
+- [ ] Add Worker URL as `apiUrl`
+- [ ] Commit and push to GitHub
+
+#### 4.2 Update index.html
+- [ ] Load `config.js` before `editor.js`
+- [ ] Update `<script>` tags order
+
+#### 4.3 Update editor.js
+- [ ] Remove `loadConfig()` function
+- [ ] Use CONFIG directly from config.js
+- [ ] Commit and push changes
+
+#### 4.4 Redeploy Editor
+- [ ] Cloudflare Pages auto-deploys from GitHub
+- [ ] Wait ~2 minutes for deploy
+- [ ] Verify at `editor.sparkler.club`
+
+---
+
+### 5. Test End-to-End Publishing
+
+#### 5.1 Write Test Post from Web
+- [ ] Visit `editor.sparkler.club`
+- [ ] Login with authentication
+- [ ] Write a test post
+- [ ] Click "✨ Publish"
+
+#### 5.2 Verify Publishing
+- [ ] Check GitHub repo for new commit
+- [ ] Wait ~2 minutes for Cloudflare Pages build
+- [ ] Visit `https://sparkler.club`
+- [ ] Verify post appears!
+
+#### 5.3 Test from iPhone
+- [ ] Open Safari on iPhone
+- [ ] Visit `editor.sparkler.club`
+- [ ] Login
+- [ ] Write quick post
+- [ ] Publish successfully
+
+---
+
+### 6. Optional: PWA Features
+
+#### 6.1 Add manifest.json
+- [ ] Create app manifest with metadata
+- [ ] Add app icons (512x512, 192x192)
+- [ ] Link in index.html
+
+#### 6.2 Test "Add to Home Screen"
+- [ ] Open editor on iPhone Safari
+- [ ] Tap Share → Add to Home Screen
+- [ ] Open from home screen (standalone mode)
+
+#### 6.3 Add Service Worker (Optional)
+- [ ] Create service worker for offline editing
+- [ ] Cache editor files
+- [ ] Enable offline mode
+
+---
+
+## 🎉 Success Criteria
+
+### Phase 2 Complete When:
+- ✅ Editor accessible from web (editor.sparkler.club)
+- ✅ Authentication working (only you can access)
+- ✅ Publishing works from web (no local server)
+- ✅ Works on Mac, iPhone, any browser
+- ✅ Can demo to friends by adding their email
+- ✅ Total cost still ~$1.25/month (all free tiers!)
+
+---
+
+## 📚 Additional Resources
+- Cloudflare Workers: https://developers.cloudflare.com/workers/
+- Cloudflare Access: https://developers.cloudflare.com/cloudflare-one/
+- Wrangler CLI: https://developers.cloudflare.com/workers/wrangler/
+- GitHub API: https://docs.github.com/en/rest/repos/contents
+- WebAuthn/Passkey: https://webauthn.guide/
+
+---
+
+**Last Updated:** 2025-12-03
