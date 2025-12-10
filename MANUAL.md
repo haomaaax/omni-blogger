@@ -1,21 +1,88 @@
 # Blog Editor Manual
 
-A clean, distraction-free blog editor with WYSIWYG interface and one-click publish to your Hugo static site.
+A clean, distraction-free **web-based and local** blog editor with WYSIWYG interface and one-click publish to your Hugo static site.
+
+**Write from anywhere. Publish instantly. Own your content.**
 
 ---
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [File Structure](#file-structure)
-3. [Setup Instructions](#setup-instructions)
-4. [Using the Editor](#using-the-editor)
-5. [Configuration](#configuration)
-6. [How It Works](#how-it-works)
-7. [Customization Guide](#customization-guide)
-8. [Keyboard Shortcuts](#keyboard-shortcuts)
-9. [Troubleshooting](#troubleshooting)
-10. [Future Enhancements](#future-enhancements)
+1. [Quick Start (Web Editor)](#quick-start-web-editor) - **Start here if you just want to write!**
+2. [Overview](#overview)
+3. [File Structure](#file-structure)
+4. [Setup Instructions (Local Development)](#setup-instructions)
+5. [Using the Editor](#using-the-editor)
+6. [Configuration](#configuration)
+7. [How It Works](#how-it-works)
+8. [Customization Guide](#customization-guide)
+9. [Keyboard Shortcuts](#keyboard-shortcuts)
+10. [Troubleshooting](#troubleshooting)
+11. [Deployment Guide (Self-Hosting)](#deployment-guide)
+
+---
+
+## Quick Start (Web Editor)
+
+**For end users who just want to write - no setup required!**
+
+### Using the Live Web Editor
+
+1. **Visit the editor:**
+   ```
+   https://editor.sparkler.club
+   ```
+
+2. **Login:**
+   - Enter your email address
+   - Check your inbox for the one-time code
+   - Enter the code to login
+   - Your session lasts 24 hours
+
+3. **Write your post:**
+   - Enter a title
+   - Add tags (optional, comma-separated)
+   - Write your content using the toolbar for formatting
+
+4. **Publish:**
+   - Click the **"✨ Publish"** button
+   - Wait ~2 minutes for the site to build
+   - Visit https://sparkler.club to see your post live!
+
+**That's it!** No local server, no terminal commands, no technical setup required.
+
+### What You Can Do
+
+- ✅ Write and format posts (bold, italic, headings, lists, quotes, links, code)
+- ✅ Save drafts automatically (stored in your browser)
+- ✅ Publish to the blog with one click
+- ✅ Access from any device (Mac, iPhone, iPad, any browser)
+- ✅ Work offline (drafts save locally, publish when online)
+
+### What Gets Saved Where
+
+- **Drafts**: Saved in your browser's localStorage
+  - Per-device (not synced across devices yet)
+  - Cleared if you clear browser data
+  - Available in "Drafts" menu
+
+- **Published Posts**: Saved to GitHub repository
+  - Converted to Markdown automatically
+  - Triggers site rebuild (takes ~2 minutes)
+  - Appears at https://sparkler.club
+
+### Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `⌘S` | Save draft |
+| `⌘Enter` | Publish |
+| `⌘B` | Bold |
+| `⌘I` | Italic |
+
+---
+
+**Need more control?** Continue reading for local development setup.
 
 ---
 
@@ -630,14 +697,151 @@ Write in Editor → Click Publish → Hugo builds → Preview at localhost:1313
 
 ---
 
+## Deployment Guide
+
+**Want to deploy your own instance? Follow these steps.**
+
+### Prerequisites
+
+- Cloudflare account (free tier)
+- GitHub account
+- Your Hugo blog repository
+- Domain (optional, can use *.pages.dev subdomain)
+
+### Step 1: Deploy Blog to Cloudflare Pages
+
+If not already done:
+
+1. Push your Hugo blog to GitHub
+2. Go to Cloudflare Dashboard → Pages → Create project
+3. Connect to your blog repository
+4. Build settings:
+   - Framework: Hugo
+   - Build command: `hugo --minify`
+   - Build output: `public`
+5. Deploy
+6. (Optional) Add custom domain
+
+See [todo.md](todo.md) Phase 1 for detailed steps.
+
+### Step 2: Deploy Editor to Cloudflare Pages
+
+1. Push this repository (omni-blogger) to GitHub
+2. Go to Cloudflare Dashboard → Pages → Create project
+3. Connect to omni-blogger repository
+4. Build settings:
+   - Framework: None
+   - Build command: (leave empty)
+   - Build output: `/` or leave empty
+5. Deploy
+6. Add custom domain (e.g., `editor.yourdomain.com`)
+
+### Step 3: Add Authentication (Cloudflare Access)
+
+1. Go to Cloudflare Dashboard → Zero Trust
+2. Access → Applications → Add Application
+3. Select "Self-hosted"
+4. Configure:
+   - Application name: Blog Editor
+   - Domain: editor.yourdomain.com
+5. Add Access Policy:
+   - Allow: Emails
+   - Enter your email(s)
+6. Save
+
+### Step 4: Create Cloudflare Worker
+
+1. Install Wrangler CLI:
+   ```bash
+   npm install -g wrangler
+   wrangler login
+   ```
+
+2. Create Worker project:
+   ```bash
+   mkdir publish-worker
+   cd publish-worker
+   ```
+
+3. Create `wrangler.toml`:
+   ```toml
+   name = "blog-publisher"
+   main = "src/index.js"
+   compatibility_date = "2024-12-10"
+   ```
+
+4. Create `src/index.js`:
+   - See [ROADMAP.md](ROADMAP.md) Phase 3 for the Worker code
+   - Update the `repo` variable to your blog repository
+
+5. Deploy:
+   ```bash
+   wrangler deploy
+   ```
+
+6. Add GitHub token as secret:
+   ```bash
+   wrangler secret put GITHUB_TOKEN
+   # Paste your GitHub Personal Access Token (with 'repo' scope)
+   ```
+
+### Step 5: Connect Editor to Worker
+
+1. Create `config.js` in your omni-blogger repository:
+   ```javascript
+   const CONFIG = {
+     blogUrl: 'https://yourdomain.com',
+     apiUrl: 'https://blog-publisher.your-subdomain.workers.dev',
+     publishEndpoint: ''
+   };
+   ```
+
+2. Update `index.html` to load config.js:
+   ```html
+   <script src="config.js"></script>
+   <script src="editor.js"></script>
+   ```
+
+3. Commit and push to GitHub
+4. Cloudflare Pages will auto-deploy
+
+### Step 6: Test
+
+1. Visit your editor URL (e.g., `editor.yourdomain.com`)
+2. Login with authentication
+3. Write a test post
+4. Click "Publish"
+5. Wait ~2 minutes
+6. Check your blog - post should appear!
+
+### Costs
+
+| Service | Usage | Cost |
+|---------|-------|------|
+| Cloudflare Pages (blog) | Free tier | $0 |
+| Cloudflare Pages (editor) | Free tier | $0 |
+| Cloudflare Workers | Free tier (100k req/day) | $0 |
+| Cloudflare Access | Free tier (50 users) | $0 |
+| Domain (optional) | Varies | ~$10-15/year |
+
+**Total**: $0-15/year (domain only if you want custom domain)
+
+---
+
 ## Support
 
 This is a personal tool you own and control. For issues:
 
 1. Check the Troubleshooting section
 2. Check the browser console for errors
-3. Check the server console for errors
-4. Modify the code to fix issues—it's yours!
+3. Check the server console for errors (if using local)
+4. Check Cloudflare Worker logs (if using web)
+5. Modify the code to fix issues—it's yours!
+
+**Resources:**
+- [README.md](README.md) - Project overview
+- [ROADMAP.md](ROADMAP.md) - Implementation details and learnings
+- [todo.md](todo.md) - Detailed deployment checklist
 
 ---
 

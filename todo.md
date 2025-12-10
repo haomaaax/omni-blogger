@@ -323,50 +323,50 @@ See [ROADMAP.md](ROADMAP.md) for detailed implementation guide.
 ### 1. Deploy Editor to Cloudflare Pages
 
 #### 1.1 Choose Deployment Method
-- [ ] **Option A:** Separate subdomain (`editor.sparkler.club`) - Recommended
+- [x] **Option A:** Separate subdomain (`editor.sparkler.club`) - Recommended ✅
 - [ ] **Option B:** Same domain, different path (`sparkler.club/editor`)
 
 #### 1.2 Deploy to Cloudflare Pages
-- [ ] Go to Cloudflare Dashboard → Pages
-- [ ] Click "Create a project"
-- [ ] Connect to Git → Select `omni-blogger` repo
-- [ ] Build settings: None (static files)
-- [ ] Deploy
-- [ ] Note your pages.dev URL
+- [x] Go to Cloudflare Dashboard → Pages
+- [x] Click "Create a project"
+- [x] Connect to Git → Select `omni-blogger` repo
+- [x] Build settings: None (static files)
+- [x] Deploy
+- [x] Note your pages.dev URL
 
 #### 1.3 Configure Custom Domain
-- [ ] In Cloudflare Pages project → Custom domains
-- [ ] Add custom domain: `editor.sparkler.club`
-- [ ] Wait for DNS to propagate (~5-15 mins)
+- [x] In Cloudflare Pages project → Custom domains
+- [x] Add custom domain: `editor.sparkler.club`
+- [x] Wait for DNS to propagate (~5-15 mins)
 
 #### 1.4 Test Web Editor
-- [ ] Visit `editor.sparkler.club`
-- [ ] Verify editor loads
-- [ ] Test WYSIWYG editing
-- [ ] Test draft save to localStorage
-- [ ] Note: Publishing won't work yet (needs Cloudflare Worker)
+- [x] Visit `editor.sparkler.club`
+- [x] Verify editor loads
+- [x] Test WYSIWYG editing
+- [x] Test draft save to localStorage
+- [x] Note: Publishing won't work yet (needs Cloudflare Worker)
 
 ---
 
 ### 2. Add Authentication (Cloudflare Access)
 
 #### 2.1 Set Up Cloudflare Zero Trust
-- [ ] Go to Cloudflare Dashboard → Zero Trust
-- [ ] Access → Applications → Add Application
-- [ ] Select "Self-hosted" application
-- [ ] Application domain: `editor.sparkler.club`
+- [x] Go to Cloudflare Dashboard → Zero Trust
+- [x] Access → Applications → Add Application
+- [x] Select "Self-hosted" application
+- [x] Application domain: `editor.sparkler.club`
 
 #### 2.2 Configure Access Policy
-- [ ] Add policy: Allow specific emails
-- [ ] Enter your email address
-- [ ] Choose identity provider (Google, GitHub, or Email OTP)
-- [ ] Save and deploy
+- [x] Add policy: Allow specific emails
+- [x] Enter your email address
+- [x] Choose identity provider (Google, GitHub, or Email OTP)
+- [x] Save and deploy
 
 #### 2.3 Test Authentication
-- [ ] Visit `editor.sparkler.club`
-- [ ] See Cloudflare Access login screen
-- [ ] Login with your email
-- [ ] Access granted → Editor loads
+- [x] Visit `editor.sparkler.club`
+- [x] See Cloudflare Access login screen
+- [x] Login with your email
+- [x] Access granted → Editor loads
 
 #### 2.4 Add Friends (Optional)
 - [ ] Add friend's email to allowed list
@@ -382,6 +382,8 @@ See [ROADMAP.md](ROADMAP.md) for detailed implementation guide.
 npm install -g wrangler
 wrangler login
 ```
+- [x] Installed Wrangler v4.53.0
+- [x] Logged in successfully
 
 #### 3.2 Create Worker Project
 ```bash
@@ -389,60 +391,63 @@ mkdir publish-worker
 cd publish-worker
 wrangler init
 ```
-- [ ] Copy publish-worker code from ROADMAP.md
-- [ ] Update repo name to your blog repo
+- [x] Created Worker project at `~/sparkler/publish-worker`
+- [x] Created `wrangler.toml` configuration
+- [x] Created `src/index.js` with publishing logic
+- [x] Updated repo name to `haomaaax/max-notes`
 
 #### 3.3 Configure GitHub Token
-- [ ] Go to GitHub → Settings → Developer settings → Personal access tokens
-- [ ] Create token with `repo` scope
-- [ ] Copy the token
-- [ ] Run: `wrangler secret put GITHUB_TOKEN`
-- [ ] Paste token when prompted
+- [x] Go to GitHub → Settings → Developer settings → Personal access tokens
+- [x] Create token with `repo` scope
+- [x] Copy the token
+- [x] Run: `wrangler secret put GITHUB_TOKEN`
+- [x] Paste token when prompted
 
 #### 3.4 Deploy Worker
 ```bash
 wrangler deploy
 ```
-- [ ] Note your Worker URL: `https://publish-worker.XXXXX.workers.dev`
+- [x] Worker deployed successfully! ✅
+- [x] Worker URL: `https://blog-publisher.maxyay5566.workers.dev`
 
 ---
 
 ### 4. Connect Editor to Worker
 
 #### 4.1 Create config.js for Web
-- [ ] Create `config.js` in omni-blogger repo
-- [ ] Add Worker URL as `apiUrl`
-- [ ] Commit and push to GitHub
+- [x] Create `config.js` in omni-blogger repo
+- [x] Add Worker URL as `apiUrl`: `https://blog-publisher.maxyay5566.workers.dev`
+- [x] Commit and push to GitHub
 
 #### 4.2 Update index.html
-- [ ] Load `config.js` before `editor.js`
-- [ ] Update `<script>` tags order
+- [x] Load `config.js` before `editor.js`
+- [x] Update `<script>` tags order
 
 #### 4.3 Update editor.js
-- [ ] Remove `loadConfig()` function
-- [ ] Use CONFIG directly from config.js
-- [ ] Commit and push changes
+- [x] Remove `loadConfig()` function
+- [x] Use CONFIG directly from config.js
+- [x] Commit and push changes
 
 #### 4.4 Redeploy Editor
-- [ ] Cloudflare Pages auto-deploys from GitHub
-- [ ] Wait ~2 minutes for deploy
-- [ ] Verify at `editor.sparkler.club`
+- [x] Cloudflare Pages auto-deploys from GitHub
+- [x] Wait ~2 minutes for deploy
+- [x] Verify at `editor.sparkler.club`
 
 ---
 
 ### 5. Test End-to-End Publishing
 
 #### 5.1 Write Test Post from Web
-- [ ] Visit `editor.sparkler.club`
-- [ ] Login with authentication
-- [ ] Write a test post
-- [ ] Click "✨ Publish"
+- [x] Visit `editor.sparkler.club`
+- [x] Login with authentication
+- [x] Write a test post
+- [x] Click "✨ Publish"
 
 #### 5.2 Verify Publishing
-- [ ] Check GitHub repo for new commit
-- [ ] Wait ~2 minutes for Cloudflare Pages build
-- [ ] Visit `https://sparkler.club`
-- [ ] Verify post appears!
+- [x] Check GitHub repo for new commit
+- [x] Wait ~2 minutes for Cloudflare Pages build
+- [x] Visit `https://sparkler.club`
+- [x] Verify post appears!
 
 #### 5.3 Test from iPhone
 - [ ] Open Safari on iPhone
@@ -493,4 +498,13 @@ wrangler deploy
 
 ---
 
-**Last Updated:** 2025-12-03
+**Last Updated:** 2025-12-10
+
+## 🎉 Phase 2 Status: COMPLETE!
+
+All core functionality is now working:
+- ✅ Web editor live at editor.sparkler.club
+- ✅ Authentication with Cloudflare Access
+- ✅ Publishing via Cloudflare Worker
+- ✅ End-to-end tested and verified
+- ⏳ iPhone testing pending (optional)
