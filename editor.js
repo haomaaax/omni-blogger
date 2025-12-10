@@ -4,24 +4,10 @@
    ============================================ */
 
 // ============================================
-// Configuration - Loaded from server
+// Configuration - Loaded from config.js
+// CONFIG is defined globally by config.js
 // ============================================
-let CONFIG = {
-  blogUrl: 'http://localhost:1313', // Default fallback
-  apiUrl: 'http://localhost:3000'
-};
-
-// Load config from server
-async function loadConfig() {
-  try {
-    const response = await fetch('http://localhost:3000/config');
-    const serverConfig = await response.json();
-    CONFIG = { ...CONFIG, ...serverConfig };
-    console.log('✅ Config loaded from server');
-  } catch (error) {
-    console.warn('⚠️ Could not load config from server, using defaults');
-  }
-}
+// Note: CONFIG is loaded from config.js before this script runs
 
 // ============================================
 // DOM Elements
@@ -503,9 +489,11 @@ function closeModal() {
 // ============================================
 // Initialize App
 // ============================================
-async function init() {
-  // Load config from server first
-  await loadConfig();
+function init() {
+  // CONFIG is already loaded from config.js
+  console.log('✅ Blog Editor initialized');
+  console.log('📡 API URL:', CONFIG.apiUrl);
+  console.log('🌐 Blog URL:', CONFIG.blogUrl);
 
   initToolbar();
   initKeyboardShortcuts();
