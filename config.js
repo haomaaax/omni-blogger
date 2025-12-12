@@ -8,7 +8,7 @@ const CONFIG = {
   blogUrl: 'https://sparkler.club',
 
   // Cloudflare Worker API for publishing
-  apiUrl: 'https://blog-publisher.maxyay5566.workers.dev',
+  apiUrl: 'https://api.sparkler.club',
 
   // Publishing endpoint (appended to apiUrl)
   publishEndpoint: ''
