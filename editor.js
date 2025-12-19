@@ -19,11 +19,14 @@ const elements = {
   status: document.getElementById('status'),
   btnSave: document.getElementById('btn-save'),
   btnPublish: document.getElementById('btn-publish'),
+  btnMenu: document.getElementById('btn-menu'),
+  btnCloseMenu: document.getElementById('btn-close-menu'),
   btnDrafts: document.getElementById('btn-drafts'),
   btnCloseDrafts: document.getElementById('btn-close-drafts'),
   btnPosts: document.getElementById('btn-posts'),
   btnClosePosts: document.getElementById('btn-close-posts'),
   btnNewPost: document.getElementById('btn-new-post'),
+  menuPanel: document.getElementById('menu-panel'),
   draftsPanel: document.getElementById('drafts-panel'),
   draftsList: document.getElementById('drafts-list'),
   postsPanel: document.getElementById('posts-panel'),
@@ -383,15 +386,6 @@ function renderDraftsList() {
   });
 }
 
-function openDraftsPanel() {
-  renderDraftsList();
-  elements.draftsPanel.classList.remove('hidden');
-}
-
-function closeDraftsPanel() {
-  elements.draftsPanel.classList.add('hidden');
-}
-
 // ============================================
 // Status Display
 // ============================================
@@ -715,13 +709,32 @@ function cancelDelete() {
   elements.deleteModal.classList.add('hidden');
 }
 
+function openMenu() {
+  elements.menuPanel.classList.remove('hidden');
+}
+
+function closeMenu() {
+  elements.menuPanel.classList.add('hidden');
+}
+
 function openPostsPanel() {
+  closeMenu();
   renderPostsList();
   elements.postsPanel.classList.remove('hidden');
 }
 
 function closePostsPanel() {
   elements.postsPanel.classList.add('hidden');
+}
+
+function openDraftsPanel() {
+  closeMenu();
+  renderDraftsList();
+  elements.draftsPanel.classList.remove('hidden');
+}
+
+function closeDraftsPanel() {
+  elements.draftsPanel.classList.add('hidden');
 }
 
 function startNewPost() {
@@ -756,6 +769,8 @@ function init() {
   // Event listeners
   elements.btnSave.addEventListener('click', saveDraft);
   elements.btnPublish.addEventListener('click', publishPost);
+  elements.btnMenu.addEventListener('click', openMenu);
+  elements.btnCloseMenu.addEventListener('click', closeMenu);
   elements.btnDrafts.addEventListener('click', openDraftsPanel);
   elements.btnCloseDrafts.addEventListener('click', closeDraftsPanel);
   elements.btnPosts.addEventListener('click', openPostsPanel);
@@ -779,15 +794,23 @@ function init() {
     }
   });
 
-  // Close drafts panel on outside click
+  // Close panels on outside click
   document.addEventListener('click', (e) => {
+    // Close menu panel
+    if (!elements.menuPanel.contains(e.target) &&
+        !elements.btnMenu.contains(e.target) &&
+        !elements.menuPanel.classList.contains('hidden')) {
+      closeMenu();
+    }
+
+    // Close drafts panel
     if (!elements.draftsPanel.contains(e.target) &&
         !elements.btnDrafts.contains(e.target) &&
         !elements.draftsPanel.classList.contains('hidden')) {
       closeDraftsPanel();
     }
 
-    // Close posts panel on outside click
+    // Close posts panel
     if (!elements.postsPanel.contains(e.target) &&
         !elements.btnPosts.contains(e.target) &&
         !elements.postsPanel.classList.contains('hidden')) {
