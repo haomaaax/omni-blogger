@@ -791,6 +791,59 @@ function startNewPost() {
 }
 
 // ============================================
+// Theme Toggle
+// ============================================
+function initTheme() {
+  const theme = localStorage.getItem('theme') || 'auto';
+  applyTheme(theme);
+}
+
+function applyTheme(theme) {
+  const html = document.documentElement;
+  const sunIcon = document.querySelector('.sun-icon');
+  const moonIcon = document.querySelector('.moon-icon');
+
+  if (theme === 'dark') {
+    html.classList.add('dark');
+    sunIcon.classList.add('hidden');
+    moonIcon.classList.remove('hidden');
+  } else if (theme === 'light') {
+    html.classList.remove('dark');
+    sunIcon.classList.remove('hidden');
+    moonIcon.classList.add('hidden');
+  } else {
+    // Auto mode - use system preference
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark) {
+      html.classList.add('dark');
+      sunIcon.classList.add('hidden');
+      moonIcon.classList.remove('hidden');
+    } else {
+      html.classList.remove('dark');
+      sunIcon.classList.remove('hidden');
+      moonIcon.classList.add('hidden');
+    }
+  }
+
+  localStorage.setItem('theme', theme);
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const currentTheme = localStorage.getItem('theme') || 'auto';
+
+  // Cycle: auto → light → dark → auto
+  if (currentTheme === 'auto') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(prefersDark ? 'light' : 'dark');
+  } else if (currentTheme === 'light') {
+    applyTheme('dark');
+  } else {
+    applyTheme('light');
+  }
+}
+
+// ============================================
 // Initialize App
 // ============================================
 function init() {
@@ -799,6 +852,7 @@ function init() {
   console.log('📡 API URL:', CONFIG.apiUrl);
   console.log('🌐 Blog URL:', CONFIG.blogUrl);
 
+  initTheme();
   initToolbar();
   initKeyboardShortcuts();
   initAutoSave();
@@ -816,6 +870,7 @@ function init() {
   elements.btnCloseModal.addEventListener('click', closeModal);
   elements.btnCancelDelete.addEventListener('click', cancelDelete);
   elements.btnConfirmDelete.addEventListener('click', deletePost);
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
   // Close modal on background click
   elements.publishModal.addEventListener('click', (e) => {
