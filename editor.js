@@ -350,12 +350,12 @@ function initAutoSave() {
 // ============================================
 function renderDraftsList() {
   const drafts = getDrafts();
-  
+
   if (drafts.length === 0) {
     elements.draftsList.innerHTML = '<p class="no-drafts">No drafts yet</p>';
     return;
   }
-  
+
   elements.draftsList.innerHTML = drafts.map(draft => {
     const date = new Date(draft.updatedAt).toLocaleDateString('en-US', {
       month: 'short',
@@ -363,27 +363,64 @@ function renderDraftsList() {
       hour: '2-digit',
       minute: '2-digit'
     });
-    
+
     // Extract preview text
     const temp = document.createElement('div');
     temp.innerHTML = draft.content;
     const preview = temp.textContent.substring(0, 80) + '...';
-    
+
     return `
-      <div class="draft-item" data-id="${draft.id}">
-        <h3>${draft.title}</h3>
-        <p>${preview}</p>
-        <time>${date}</time>
+      <div class="draft-item">
+        <div class="draft-item-content" data-id="${draft.id}">
+          <h3>${draft.title}</h3>
+          <p>${preview}</p>
+          <time>${date}</time>
+        </div>
+        <div class="draft-item-actions">
+          <button class="btn-delete-draft" data-id="${draft.id}" data-title="${draft.title}" title="Delete draft">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
       </div>
     `;
   }).join('');
-  
-  // Add click handlers
-  elements.draftsList.querySelectorAll('.draft-item').forEach(item => {
+
+  // Add click handlers for loading drafts
+  elements.draftsList.querySelectorAll('.draft-item-content').forEach(item => {
     item.addEventListener('click', () => {
       loadDraft(item.dataset.id);
     });
   });
+
+  // Add click handlers for deleting drafts
+  elements.draftsList.querySelectorAll('.btn-delete-draft').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteDraft(btn.dataset.id, btn.dataset.title);
+    });
+  });
+}
+
+function deleteDraft(draftId, title) {
+  if (!confirm(`Delete draft "${title}"?`)) {
+    return;
+  }
+
+  let drafts = getDrafts();
+  drafts = drafts.filter(d => d.id !== draftId);
+  saveDrafts(drafts);
+
+  // If we're currently editing this draft, clear the editor
+  if (currentDraftId === draftId) {
+    newPost();
+  }
+
+  // Refresh the drafts list
+  renderDraftsList();
+  showStatus('Draft deleted', 'success');
 }
 
 // ============================================
