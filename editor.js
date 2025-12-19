@@ -21,9 +21,18 @@ const elements = {
   btnPublish: document.getElementById('btn-publish'),
   btnDrafts: document.getElementById('btn-drafts'),
   btnCloseDrafts: document.getElementById('btn-close-drafts'),
+  btnPosts: document.getElementById('btn-posts'),
+  btnClosePosts: document.getElementById('btn-close-posts'),
+  btnNewPost: document.getElementById('btn-new-post'),
   draftsPanel: document.getElementById('drafts-panel'),
   draftsList: document.getElementById('drafts-list'),
+  postsPanel: document.getElementById('posts-panel'),
+  postsList: document.getElementById('posts-list'),
   publishModal: document.getElementById('publish-modal'),
+  deleteModal: document.getElementById('delete-modal'),
+  deleteMessage: document.getElementById('delete-message'),
+  btnCancelDelete: document.getElementById('btn-cancel-delete'),
+  btnConfirmDelete: document.getElementById('btn-confirm-delete'),
   btnCloseModal: document.getElementById('btn-close-modal'),
   postLink: document.getElementById('post-link')
 };
@@ -33,6 +42,10 @@ const elements = {
 // ============================================
 let currentDraftId = null;
 let autoSaveTimeout = null;
+let isEditing = false;
+let currentPostSlug = null;
+let currentPostSha = null;
+let postToDelete = null;
 
 // ============================================
 // Toolbar Commands
@@ -400,64 +413,81 @@ async function publishPost() {
   const title = elements.title.value.trim();
   const tags = elements.tags.value.trim();
   const htmlContent = elements.editor.innerHTML;
-  
+
   // Validation
   if (!title) {
     alert('Please enter a title');
     elements.title.focus();
     return;
   }
-  
+
   if (!htmlContent.trim()) {
     alert('Please write some content');
     elements.editor.focus();
     return;
   }
-  
+
   // Convert to Markdown
   const markdown = htmlToMarkdown(htmlContent);
   const frontMatter = generateFrontMatter(title, tags);
   const fullContent = frontMatter + markdown;
   const slug = generateSlug(title);
   const filename = `${slug}.md`;
-  
-  showStatus('Publishing...', '');
-  
+
+  showStatus(isEditing ? 'Updating...' : 'Publishing...', '');
+
   try {
-    const response = await fetch(`${CONFIG.apiUrl}/publish`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        filename,
-        content: fullContent
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to publish');
+    let response;
+
+    if (isEditing && currentPostSlug && currentPostSha) {
+      // Update existing post
+      response = await fetch(`${CONFIG.apiUrl}/posts/${currentPostSlug}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          content: fullContent,
+          sha: currentPostSha
+        })
+      });
+    } else {
+      // Create new post (backwards compatible endpoint)
+      response = await fetch(`${CONFIG.apiUrl}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          filename,
+          content: fullContent
+        })
+      });
     }
-    
+
+    if (!response.ok) {
+      throw new Error(isEditing ? 'Failed to update post' : 'Failed to publish');
+    }
+
     const result = await response.json();
-    
+
     // Show success modal
     elements.postLink.href = `${CONFIG.blogUrl}/posts/${slug}/`;
     elements.publishModal.classList.remove('hidden');
-    
+
     // Clear the draft from localStorage
     if (currentDraftId) {
       let drafts = getDrafts();
       drafts = drafts.filter(d => d.id !== currentDraftId);
       saveDrafts(drafts);
     }
-    
-    // Reset editor
-    newPost();
-    
+
+    // Reset editor and edit mode
+    startNewPost();
+
   } catch (error) {
     console.error('Publish error:', error);
-    
+
     // Fallback: Download the markdown file
     downloadMarkdownFile(filename, fullContent);
     showStatus('Downloaded (server offline)', '');
@@ -487,6 +517,230 @@ function closeModal() {
 }
 
 // ============================================
+// Posts Management
+// ============================================
+
+async function loadPosts() {
+  try {
+    const response = await fetch(`${CONFIG.apiUrl}/posts`);
+    if (!response.ok) {
+      throw new Error('Failed to load posts');
+    }
+    const data = await response.json();
+    return data.posts || [];
+  } catch (error) {
+    console.error('Error loading posts:', error);
+    showStatus('Failed to load posts', 'error');
+    return [];
+  }
+}
+
+async function renderPostsList() {
+  elements.postsList.innerHTML = '<div class="loading">Loading posts...</div>';
+
+  const posts = await loadPosts();
+
+  if (posts.length === 0) {
+    elements.postsList.innerHTML = '<p class="no-posts">No posts yet. Start writing!</p>';
+    return;
+  }
+
+  elements.postsList.innerHTML = posts.map(post => {
+    const date = new Date(post.date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    const tagsHtml = post.tags && post.tags.length > 0
+      ? `<div class="post-tags-preview">${post.tags.slice(0, 3).join(', ')}</div>`
+      : '';
+
+    return `
+      <div class="post-item" data-slug="${post.slug}">
+        <div class="post-item-content">
+          <h3>${post.title}</h3>
+          <p class="post-excerpt">${post.excerpt || ''}</p>
+          ${tagsHtml}
+          <time>${date}</time>
+        </div>
+        <div class="post-item-actions">
+          <button class="btn-edit" data-slug="${post.slug}" title="Edit post">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Edit
+          </button>
+          <button class="btn-delete" data-slug="${post.slug}" data-title="${post.title}" title="Delete post">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Add event listeners
+  elements.postsList.querySelectorAll('.btn-edit').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      loadPostForEditing(btn.dataset.slug);
+    });
+  });
+
+  elements.postsList.querySelectorAll('.btn-delete').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      confirmDelete(btn.dataset.slug, btn.dataset.title);
+    });
+  });
+}
+
+async function loadPostForEditing(slug) {
+  try {
+    showStatus('Loading post...', '');
+
+    const response = await fetch(`${CONFIG.apiUrl}/posts/${slug}`);
+    if (!response.ok) {
+      throw new Error('Failed to load post');
+    }
+
+    const post = await response.json();
+
+    // Set edit mode
+    isEditing = true;
+    currentPostSlug = slug;
+    currentPostSha = post.sha;
+
+    // Populate editor
+    elements.title.value = post.frontmatter.title || '';
+    elements.tags.value = Array.isArray(post.frontmatter.tags)
+      ? post.frontmatter.tags.join(', ')
+      : '';
+
+    // Convert markdown to HTML for the editor
+    elements.editor.innerHTML = markdownToHtml(post.content);
+
+    // Update UI
+    elements.btnPublish.textContent = '✨ Update Post';
+    elements.btnNewPost.classList.remove('hidden');
+
+    // Close posts panel
+    closePostsPanel();
+
+    showStatus('Loaded for editing', 'success');
+
+  } catch (error) {
+    console.error('Error loading post:', error);
+    showStatus('Failed to load post', 'error');
+  }
+}
+
+// Simple markdown to HTML converter (basic implementation)
+function markdownToHtml(markdown) {
+  let html = markdown
+    // Headers
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+    // Bold
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Italic
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Links
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+    // Code
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // Line breaks
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+
+  return `<p>${html}</p>`;
+}
+
+function confirmDelete(slug, title) {
+  postToDelete = slug;
+  elements.deleteMessage.textContent = `Are you sure you want to delete "${title}"? This cannot be undone.`;
+  elements.deleteModal.classList.remove('hidden');
+}
+
+async function deletePost() {
+  if (!postToDelete) return;
+
+  try {
+    showStatus('Deleting post...', '');
+
+    // Get the post to retrieve its SHA
+    const getResponse = await fetch(`${CONFIG.apiUrl}/posts/${postToDelete}`);
+    if (!getResponse.ok) {
+      throw new Error('Failed to get post details');
+    }
+    const postData = await getResponse.json();
+
+    // Delete the post
+    const deleteResponse = await fetch(`${CONFIG.apiUrl}/posts/${postToDelete}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sha: postData.sha
+      })
+    });
+
+    if (!deleteResponse.ok) {
+      throw new Error('Failed to delete post');
+    }
+
+    showStatus('Post deleted!', 'success');
+
+    // Close delete modal
+    elements.deleteModal.classList.add('hidden');
+    postToDelete = null;
+
+    // Refresh posts list
+    renderPostsList();
+
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    showStatus('Failed to delete post', 'error');
+  }
+}
+
+function cancelDelete() {
+  postToDelete = null;
+  elements.deleteModal.classList.add('hidden');
+}
+
+function openPostsPanel() {
+  renderPostsList();
+  elements.postsPanel.classList.remove('hidden');
+}
+
+function closePostsPanel() {
+  elements.postsPanel.classList.add('hidden');
+}
+
+function startNewPost() {
+  // Reset edit mode
+  isEditing = false;
+  currentPostSlug = null;
+  currentPostSha = null;
+
+  // Clear editor
+  newPost();
+
+  // Update UI
+  elements.btnPublish.textContent = '✨ Publish';
+  elements.btnNewPost.classList.add('hidden');
+
+  showStatus('Ready for new post', 'success');
+}
+
+// ============================================
 // Initialize App
 // ============================================
 function init() {
@@ -504,12 +758,24 @@ function init() {
   elements.btnPublish.addEventListener('click', publishPost);
   elements.btnDrafts.addEventListener('click', openDraftsPanel);
   elements.btnCloseDrafts.addEventListener('click', closeDraftsPanel);
+  elements.btnPosts.addEventListener('click', openPostsPanel);
+  elements.btnClosePosts.addEventListener('click', closePostsPanel);
+  elements.btnNewPost.addEventListener('click', startNewPost);
   elements.btnCloseModal.addEventListener('click', closeModal);
+  elements.btnCancelDelete.addEventListener('click', cancelDelete);
+  elements.btnConfirmDelete.addEventListener('click', deletePost);
 
   // Close modal on background click
   elements.publishModal.addEventListener('click', (e) => {
     if (e.target === elements.publishModal) {
       closeModal();
+    }
+  });
+
+  // Close delete modal on background click
+  elements.deleteModal.addEventListener('click', (e) => {
+    if (e.target === elements.deleteModal) {
+      cancelDelete();
     }
   });
 
@@ -519,6 +785,13 @@ function init() {
         !elements.btnDrafts.contains(e.target) &&
         !elements.draftsPanel.classList.contains('hidden')) {
       closeDraftsPanel();
+    }
+
+    // Close posts panel on outside click
+    if (!elements.postsPanel.contains(e.target) &&
+        !elements.btnPosts.contains(e.target) &&
+        !elements.postsPanel.classList.contains('hidden')) {
+      closePostsPanel();
     }
   });
 

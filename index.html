@@ -11,6 +11,13 @@
     <!-- Header -->
     <header class="header">
       <div class="header-left">
+        <button id="btn-posts" class="btn-icon" title="My Posts">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+            <polyline points="13 2 13 9 20 9"></polyline>
+          </svg>
+          <span>My Posts</span>
+        </button>
         <button id="btn-drafts" class="btn-icon" title="View Drafts">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -19,6 +26,13 @@
             <line x1="16" y1="17" x2="8" y2="17"></line>
           </svg>
           <span>Drafts</span>
+        </button>
+        <button id="btn-new-post" class="btn-icon hidden" title="New Post">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>New Post</span>
         </button>
       </div>
       <div class="header-right">
@@ -73,6 +87,17 @@
       ></div>
     </main>
 
+    <!-- Posts Panel (hidden by default) -->
+    <aside id="posts-panel" class="posts-panel hidden">
+      <div class="posts-header">
+        <h2>My Posts</h2>
+        <button id="btn-close-posts" class="btn-icon">✕</button>
+      </div>
+      <div id="posts-list" class="posts-list">
+        <div class="loading">Loading posts...</div>
+      </div>
+    </aside>
+
     <!-- Drafts Panel (hidden by default) -->
     <aside id="drafts-panel" class="drafts-panel hidden">
       <div class="drafts-header">
@@ -83,6 +108,18 @@
         <!-- Drafts will be loaded here -->
       </div>
     </aside>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Delete Post?</h2>
+        <p id="delete-message">Are you sure you want to delete this post? This cannot be undone.</p>
+        <div class="modal-actions">
+          <button id="btn-cancel-delete" class="btn-secondary">Cancel</button>
+          <button id="btn-confirm-delete" class="btn-danger">Delete</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Publish Modal -->
     <div id="publish-modal" class="modal hidden">

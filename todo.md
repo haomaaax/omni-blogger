@@ -498,7 +498,7 @@ wrangler deploy
 
 ---
 
-**Last Updated:** 2025-12-10
+**Last Updated:** 2025-12-19
 
 ## 🎉 Phase 2 Status: COMPLETE!
 
@@ -507,4 +507,317 @@ All core functionality is now working:
 - ✅ Authentication with Cloudflare Access
 - ✅ Publishing via Cloudflare Worker
 - ✅ End-to-end tested and verified
-- ⏳ iPhone testing pending (optional)
+- ✅ iPhone testing complete - Success!
+- ✅ Custom Worker domain: api.sparkler.club
+- ✅ Classic Macintosh aesthetic applied
+
+---
+
+## 🚀 Phase 3: Edit & Delete Posts Feature
+
+**Goal:** Add ability to list, edit, and delete existing posts from the web editor.
+
+**Implementation:** Option B (Extend Cloudflare Worker)
+- Keeps GitHub token server-side (more secure)
+- Centralized API logic
+- Clean separation of concerns
+
+---
+
+### Phase 3.1: Extend Cloudflare Worker (Backend)
+
+#### GitHub API Integration
+- [ ] Add GitHub API helper functions
+  - [ ] `getFile(path)` - Get single file content
+  - [ ] `listFiles(path)` - List files in directory
+  - [ ] `updateFile(path, content, sha)` - Update existing file
+  - [ ] `deleteFile(path, sha)` - Delete file
+- [ ] Add error handling for GitHub API responses
+  - [ ] Handle 404 (file not found)
+  - [ ] Handle 409 (conflict/outdated SHA)
+  - [ ] Handle rate limits
+- [ ] Test GitHub API authentication
+
+#### New API Endpoints
+- [ ] Add `GET /posts` - List all posts with metadata
+  - [ ] Return array: `[{slug, title, date, tags, excerpt}]`
+  - [ ] Sort by date (newest first)
+  - [ ] Handle empty posts directory
+- [ ] Add `GET /posts/:slug` - Get single post
+  - [ ] Return: `{content, frontmatter: {title, date, tags}, sha}`
+  - [ ] Return 404 if not found
+- [ ] Add `PUT /posts/:slug` - Update existing post
+  - [ ] Require SHA for conflict detection
+  - [ ] Return updated post data
+  - [ ] Trigger GitHub rebuild
+- [ ] Add `DELETE /posts/:slug` - Delete post
+  - [ ] Require SHA for safety
+  - [ ] Return success/error
+  - [ ] Trigger GitHub rebuild
+- [ ] Add CORS headers to all new endpoints
+- [ ] Update existing POST endpoint to handle both create and update
+
+#### Utilities
+- [ ] Add frontmatter parser
+  - [ ] Extract title, date, tags from markdown
+  - [ ] Validate frontmatter format
+  - [ ] Handle malformed frontmatter
+- [ ] Add slug generator/validator
+  - [ ] Generate slug from title
+  - [ ] Validate slug format (no special chars, no path traversal)
+  - [ ] Handle duplicate slugs
+- [ ] Add markdown excerpt generator
+  - [ ] Extract first 150 chars of content
+  - [ ] Strip HTML/markdown syntax
+  - [ ] Add "..." if truncated
+
+---
+
+### Phase 3.2: Update Editor (Frontend)
+
+#### Posts List UI (Classic Mac File Browser Style)
+- [ ] Create posts list modal/sidebar
+  - [ ] Add "📂 My Posts" button to header
+  - [ ] Create modal overlay (classic Mac window style)
+  - [ ] Add close button (×) in top-right
+- [ ] Fetch and display posts from `GET /posts`
+  - [ ] Show loading state (spinning indicator)
+  - [ ] Display posts in clean list
+  - [ ] Each row: title, date, actions
+- [ ] Design list item layout
+  ```
+  ┌─────────────────────────────────────────┐
+  │ Testing new API URL                     │
+  │ December 12, 2025           [Edit]  [×] │
+  └─────────────────────────────────────────┘
+  ```
+- [ ] Add empty state
+  - [ ] Show when no posts exist
+  - [ ] "No posts yet. Start writing!"
+- [ ] Style to match classic Mac aesthetic
+  - [ ] Paper white background
+  - [ ] Clean borders
+  - [ ] SF Pro Display font
+  - [ ] Subtle hover effects
+
+#### Edit Functionality
+- [ ] Add Edit button (pencil icon) for each post
+- [ ] Load post content on Edit click
+  - [ ] Call `GET /posts/:slug`
+  - [ ] Parse frontmatter
+  - [ ] Populate title field
+  - [ ] Populate tags field
+  - [ ] Load content into WYSIWYG editor
+  - [ ] Store original SHA (for conflict detection)
+- [ ] Track edit mode in state
+  - [ ] Add `isEditing` flag
+  - [ ] Add `currentPostSlug` field
+  - [ ] Add `currentPostSha` field
+- [ ] Update publish button
+  - [ ] Show "Update Post" when editing
+  - [ ] Show "Publish Post" when creating new
+- [ ] Modify publish logic
+  - [ ] If editing: call `PUT /posts/:slug`
+  - [ ] If creating: call `POST /`
+  - [ ] Pass SHA when updating
+  - [ ] Handle conflicts (show error if SHA mismatch)
+
+#### Delete Functionality
+- [ ] Add Delete button (× icon) for each post
+- [ ] Create confirmation dialog
+  - [ ] Classic Mac alert style
+  - [ ] Show post title in message
+  - [ ] "Delete 'Post Title'? This cannot be undone."
+  - [ ] Cancel / Delete buttons
+- [ ] Call DELETE endpoint on confirmation
+  - [ ] Pass post slug and SHA
+  - [ ] Show loading state
+- [ ] Remove deleted post from list
+  - [ ] Update state
+  - [ ] Animate removal
+- [ ] Show success/error message
+  - [ ] Toast notification
+  - [ ] "Post deleted successfully"
+  - [ ] Auto-dismiss after 3s
+
+#### UI Polish & Navigation
+- [ ] Add "New Post" button
+  - [ ] Clear all fields
+  - [ ] Reset to create mode
+  - [ ] Close posts list
+- [ ] Add keyboard shortcuts
+  - [ ] `Esc` - Close posts list
+  - [ ] `Cmd+N` / `Ctrl+N` - New post
+  - [ ] `Cmd+P` / `Ctrl+P` - Open posts list
+- [ ] Add smooth transitions
+  - [ ] Modal fade in/out
+  - [ ] List item hover effects
+  - [ ] Button state changes
+- [ ] Handle mobile responsive layout
+  - [ ] Full-screen modal on mobile
+  - [ ] Touch-friendly buttons
+  - [ ] Swipe to close (optional)
+- [ ] Add loading states
+  - [ ] Spinner when fetching posts
+  - [ ] Disabled buttons during operations
+  - [ ] Progress indicators
+
+---
+
+### Phase 3.3: Testing & Deployment
+
+#### Local Testing (publish-worker)
+- [ ] Test `GET /posts` endpoint
+  - [ ] Empty posts directory
+  - [ ] Single post
+  - [ ] Multiple posts
+  - [ ] Verify sorting
+- [ ] Test `GET /posts/:slug` endpoint
+  - [ ] Valid slug
+  - [ ] Invalid slug (404)
+  - [ ] Verify frontmatter parsing
+- [ ] Test `PUT /posts/:slug` endpoint
+  - [ ] Valid update
+  - [ ] Conflict (outdated SHA)
+  - [ ] Invalid slug
+- [ ] Test `DELETE /posts/:slug` endpoint
+  - [ ] Valid delete
+  - [ ] Invalid slug
+  - [ ] Missing SHA
+- [ ] Test error cases
+  - [ ] Network failures
+  - [ ] GitHub API errors
+  - [ ] Malformed requests
+
+#### Local Testing (editor)
+- [ ] Test opening posts list
+  - [ ] Verify posts load correctly
+  - [ ] Check empty state
+  - [ ] Verify sorting
+- [ ] Test loading post into editor
+  - [ ] All fields populate correctly
+  - [ ] WYSIWYG content renders
+  - [ ] Edit mode indicator shows
+- [ ] Test updating existing post
+  - [ ] Make changes
+  - [ ] Click "Update Post"
+  - [ ] Verify GitHub commit
+  - [ ] Check blog rebuilds
+- [ ] Test deleting post
+  - [ ] Confirmation dialog appears
+  - [ ] Delete succeeds
+  - [ ] Post removed from list
+  - [ ] Verify GitHub commit
+- [ ] Test switching modes
+  - [ ] Edit → New post (clear fields)
+  - [ ] New → Edit → New
+  - [ ] Multiple edits
+- [ ] Test error handling
+  - [ ] Network offline
+  - [ ] Invalid data
+  - [ ] Conflict errors
+
+#### Production Deployment
+- [ ] Deploy Worker to api.sparkler.club
+  ```bash
+  cd ~/sparkler/publish-worker
+  wrangler deploy
+  ```
+- [ ] Deploy editor to editor.sparkler.club
+  ```bash
+  cd ~/sparkler/omni-blogger
+  git add .
+  git commit -m "Add edit/delete posts feature"
+  git push
+  ```
+- [ ] Wait for Cloudflare Pages build (~2 mins)
+- [ ] Test end-to-end in production
+  - [ ] List posts
+  - [ ] Edit post
+  - [ ] Delete post
+  - [ ] Create new post
+- [ ] Test on iPhone
+  - [ ] All features work
+  - [ ] Touch interactions smooth
+  - [ ] No layout issues
+
+#### Documentation
+- [ ] Update MANUAL.md with new features
+  - [ ] How to edit posts
+  - [ ] How to delete posts
+  - [ ] Keyboard shortcuts
+- [ ] Update README.md
+  - [ ] Add edit/delete to features list
+  - [ ] Update screenshots (optional)
+- [ ] Commit documentation changes
+
+---
+
+## 🎨 UI Design Notes
+
+### Classic Mac File Browser Aesthetic
+- **Window:** Paper white, subtle shadow, rounded corners (6px)
+- **Title Bar:** SF Pro Display, 14px, centered
+- **List Items:** 1px border, hover: blue accent
+- **Icons:** Simple, monochrome (pencil for edit, × for delete)
+- **Buttons:** Minimal, 4px border-radius, smooth transitions
+- **Empty State:** Centered text, muted color
+
+### Color Palette
+```css
+--mac-white: #FAFAFA
+--mac-paper: #F5F5F0
+--mac-blue: #0000FF
+--mac-gray: #C0C0C0
+--mac-black: #1A1A1A
+```
+
+---
+
+## 🔒 Security Considerations
+
+- ✅ GitHub token stays in Worker environment (never exposed to browser)
+- ✅ Validate slug format (prevent path traversal: `../../../etc/passwd`)
+- ✅ Use SHA for conflict detection (prevent accidental overwrites)
+- ✅ CORS restricted to editor.sparkler.club
+- ✅ Rate limiting (if needed)
+- ✅ Authentication still via Cloudflare Access
+
+---
+
+## 📦 Keep It Simple Philosophy
+
+**What we're adding:**
+- List posts
+- Edit posts
+- Delete posts
+- Better publish flow
+
+**What we're NOT adding:**
+- Drafts system
+- Version history
+- Collaborative editing
+- Rich media management
+- Categories/taxonomies
+- Post scheduling
+- Analytics dashboard
+
+The goal: Stay minimal. Keep it maintainable for years.
+
+---
+
+## ✅ Success Criteria
+
+### Phase 3 Complete When:
+- [ ] Can view list of all posts
+- [ ] Can edit any post from the list
+- [ ] Can delete any post with confirmation
+- [ ] Can switch between create/edit modes
+- [ ] All features work on iPhone
+- [ ] Classic Mac aesthetic maintained
+- [ ] No regressions in existing features
+- [ ] Total time investment: <1 day
+
+---
+
+**Phase 3 Start Date:** 2025-12-19
