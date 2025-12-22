@@ -12,8 +12,8 @@
   --mac-gray: #C0C0C0;
   --mac-gray-dark: #808080;
   --mac-black: #1A1A1A;
-  --mac-blue: #0000FF;
-  --mac-blue-hover: #0000CC;
+  --mac-blue: #1C3A52; /* Ink blue-black */
+  --mac-blue-hover: #2A4A62; /* Slightly lighter ink */
 
   /* Semantic colors */
   --bg-primary: var(--mac-white);
@@ -68,8 +68,8 @@
   --mac-gray-light: #E8E8E8;
   --mac-gray: #C0C0C0;
   --mac-black: #1A1A1A;
-  --mac-blue: #0000FF;
-  --mac-blue-hover: #0000CC;
+  --mac-blue: #1C3A52; /* Ink blue-black */
+  --mac-blue-hover: #2A4A62; /* Slightly lighter ink */
 
   --bg-primary: var(--mac-white);
   --bg-secondary: var(--mac-paper);
@@ -101,8 +101,8 @@
   --mac-paper: #1A1A1A;
   --mac-gray-light: #2A2A2A;
   --mac-gray: #505050;
-  --mac-blue: #4A90E2;
-  --mac-blue-hover: #357ABD;
+  --mac-blue: #5A7A92; /* Faded ink on dark paper */
+  --mac-blue-hover: #6A8AA2; /* Lighter faded ink */
 
   --bg-primary: var(--mac-black);
   --bg-secondary: var(--mac-paper);
@@ -135,8 +135,8 @@
     --mac-paper: #1A1A1A;
     --mac-gray-light: #2A2A2A;
     --mac-gray: #505050;
-    --mac-blue: #4A90E2;
-    --mac-blue-hover: #357ABD;
+    --mac-blue: #5A7A92; /* Faded ink on dark paper */
+    --mac-blue-hover: #6A8AA2; /* Lighter faded ink */
 
     --bg-primary: var(--mac-black);
     --bg-secondary: var(--mac-paper);
