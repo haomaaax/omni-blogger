@@ -799,47 +799,53 @@ function initTheme() {
 }
 
 function applyTheme(theme) {
+  console.log('applyTheme called with:', theme);
   const html = document.documentElement;
   const sunIcon = document.querySelector('.sun-icon');
   const moonIcon = document.querySelector('.moon-icon');
 
+  console.log('Found icons:', { sunIcon: !!sunIcon, moonIcon: !!moonIcon });
+
   if (theme === 'dark') {
     html.classList.add('dark');
-    sunIcon.classList.add('hidden');
-    moonIcon.classList.remove('hidden');
+    if (sunIcon) sunIcon.classList.add('hidden');
+    if (moonIcon) moonIcon.classList.remove('hidden');
   } else if (theme === 'light') {
     html.classList.remove('dark');
-    sunIcon.classList.remove('hidden');
-    moonIcon.classList.add('hidden');
+    if (sunIcon) sunIcon.classList.remove('hidden');
+    if (moonIcon) moonIcon.classList.add('hidden');
   } else {
     // Auto mode - use system preference
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (prefersDark) {
       html.classList.add('dark');
-      sunIcon.classList.add('hidden');
-      moonIcon.classList.remove('hidden');
+      if (sunIcon) sunIcon.classList.add('hidden');
+      if (moonIcon) moonIcon.classList.remove('hidden');
     } else {
       html.classList.remove('dark');
-      sunIcon.classList.remove('hidden');
-      moonIcon.classList.add('hidden');
+      if (sunIcon) sunIcon.classList.remove('hidden');
+      if (moonIcon) moonIcon.classList.add('hidden');
     }
   }
 
   localStorage.setItem('theme', theme);
+  console.log('Theme applied:', theme, 'HTML classes:', html.className);
 }
 
 function toggleTheme() {
+  console.log('toggleTheme called');
   const html = document.documentElement;
-  const currentTheme = localStorage.getItem('theme') || 'auto';
+  const isDark = html.classList.contains('dark');
 
-  // Cycle: auto → light → dark → auto
-  if (currentTheme === 'auto') {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(prefersDark ? 'light' : 'dark');
-  } else if (currentTheme === 'light') {
-    applyTheme('dark');
-  } else {
+  console.log('Current mode:', isDark ? 'dark' : 'light');
+
+  // Simple toggle: light ↔ dark
+  if (isDark) {
+    console.log('Switching to light mode');
     applyTheme('light');
+  } else {
+    console.log('Switching to dark mode');
+    applyTheme('dark');
   }
 }
 
@@ -870,7 +876,16 @@ function init() {
   elements.btnCloseModal.addEventListener('click', closeModal);
   elements.btnCancelDelete.addEventListener('click', cancelDelete);
   elements.btnConfirmDelete.addEventListener('click', deletePost);
-  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+  // Theme toggle
+  const themeToggleBtn = document.getElementById('theme-toggle');
+  console.log('Theme toggle button:', themeToggleBtn);
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', toggleTheme);
+    console.log('Theme toggle event listener added');
+  } else {
+    console.error('Theme toggle button not found!');
+  }
 
   // Close modal on background click
   elements.publishModal.addEventListener('click', (e) => {
