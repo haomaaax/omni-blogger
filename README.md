@@ -1,19 +1,23 @@
 # Omni Blogger
 
-A clean, distraction-free **web-based blog editor** with WYSIWYG interface and one-click publish to your Hugo static site.
+A timeless, distraction-free **web-based blog editor** with pure minimalist interface and one-click publish to your Hugo static site.
 
-**Write from anywhere. Publish instantly. Own your content.**
+**Write from anywhere. Publish instantly. Own your content. Built to last forever.**
 
-## ✨ Features
+## ✨ Philosophy
 
+This is a **timeless blog** that focuses on pure writing, not SEO optimization. Like sitting at a classic typewriter - just you and your thoughts, no distractions, no metadata, no unnecessary features. Built to last almost forever with simplicity at its core.
+
+## 🎯 Features
+
+- **Pure Minimalism** - Just title and content. No toolbar, no tags, no clutter
 - **Web-Based Editor** - Access from any device (Mac, iPhone, iPad)
-- **WYSIWYG Editing** - Write like in Google Docs, no Markdown needed
 - **Auto-save** - Drafts saved automatically to browser storage
 - **One-click Publish** - Commits to GitHub, builds and deploys automatically
+- **Classic Aesthetic** - Ink-on-paper color palette, typewriter feel
+- **Dark Mode** - Toggle in menu (sun/moon icons)
 - **Secure** - Protected with Cloudflare Access authentication
 - **Serverless** - No local server needed, fully cloud-based
-- **Dark Mode** - Follows your system preference
-- **Minimal Design** - Focused on writing
 
 ## 🌐 Live Demo
 
@@ -27,14 +31,14 @@ This project powers:
 ┌─────────────────────────────────────────┐
 │  editor.sparkler.club                   │
 │  (Cloudflare Pages)                     │
-│  - WYSIWYG Editor                       │
+│  - Minimalist WYSIWYG Editor            │
 │  - Auto-save drafts                     │
 │  - Protected by Cloudflare Access       │
 └─────────────┬───────────────────────────┘
               │ Click "Publish"
               ▼
 ┌─────────────────────────────────────────┐
-│  blog-publisher.workers.dev             │
+│  api.sparkler.club                      │
 │  (Cloudflare Worker)                    │
 │  - Receives post content                │
 │  - Commits to GitHub via API            │
@@ -62,7 +66,7 @@ This project powers:
 
 1. Visit **https://editor.sparkler.club**
 2. Login with email OTP
-3. Write your post
+3. Write your post (just title and content - nothing else!)
 4. Click "✨ Publish"
 5. Wait ~2 minutes
 6. Post appears at **https://sparkler.club**
@@ -95,7 +99,7 @@ The editor uses `config.js` (committed to git):
 ```javascript
 const CONFIG = {
   blogUrl: 'https://sparkler.club',
-  apiUrl: 'https://blog-publisher.maxyay5566.workers.dev',
+  apiUrl: 'https://api.sparkler.club',
   publishEndpoint: ''
 };
 ```
@@ -119,7 +123,9 @@ Use `config.json` (gitignored):
 ```
 Visit editor.sparkler.club
   ↓ Login with email
-  ↓ Write post
+  ↓ Write: "What's on your mind?"
+  ↓ Just title + content (no tags, no toolbar)
+  ↓ Auto-saves every 2 seconds
   ↓ Click "Publish"
   ↓ Cloudflare Worker commits to GitHub
   ↓ Cloudflare Pages builds blog
@@ -143,6 +149,7 @@ Run: node server.js
 - Vanilla JavaScript
 - ContentEditable API (WYSIWYG)
 - HTML to Markdown converter
+- Classic Macintosh aesthetic
 
 **Backend:**
 - Cloudflare Workers (serverless API)
@@ -164,39 +171,47 @@ Run: node server.js
 - **CORS**: Configured in Worker for cross-origin requests
 - **HTTPS**: Enforced on all domains
 
+## 🎨 Design Philosophy
+
+### Classic Typewriter Aesthetic
+- **Ink-on-paper colors**: Muted blue-black (#1C3A52) instead of bright digital blue
+- **Timeless icons**: Fountain pen (My Posts), Scroll (Drafts)
+- **Minimal interface**: Just what you need to write and publish
+- **No distractions**: No tags, no toolbar, no SEO optimization
+- **Simple placeholder**: "What's on your mind?" - inviting and conversational
+
+### Pure Minimalism
+- Header: Hamburger menu + Status + Publish button
+- Editor: Title + Content area (nothing else!)
+- Auto-save: Works silently in background (every 2 seconds)
+- Theme toggle: Hidden in menu (sun/moon icons)
+
 ## 📊 Features Overview
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| WYSIWYG Editor | ✅ | Bold, italic, headings, lists, quotes, links, code |
-| Auto-save Drafts | ✅ | Saved to browser localStorage |
+| Minimalist Editor | ✅ | Just title + content, no clutter |
+| Auto-save Drafts | ✅ | Saved to browser localStorage every 2s |
 | Web Publishing | ✅ | Via Cloudflare Worker |
+| Edit Published Posts | ✅ | Load, edit, update existing posts |
+| Delete Posts | ✅ | With confirmation dialog |
 | Authentication | ✅ | Cloudflare Access (email OTP) |
 | Mobile Support | ✅ | Works on iPhone, iPad |
+| Dark Mode | ✅ | Toggle in menu |
+| Classic Aesthetic | ✅ | Ink-on-paper, typewriter feel |
 | Offline Editing | ⚠️ | Drafts work offline, publishing requires internet |
-| Image Upload | ⏳ | Planned for Phase 4 |
-| Edit Published Posts | ⏳ | Planned for Phase 4 |
-| Google Login | ⏳ | Optional (currently email OTP) |
-| PWA Features | ⏳ | Planned for Phase 4 |
 
-## 🔮 Roadmap
+## 🔮 Future Enhancements (Optional)
 
-**Phase 1-3: Complete ✅**
-- ✅ Local editor with Hugo integration
-- ✅ Deploy blog to Cloudflare Pages
-- ✅ Deploy editor to web (editor.sparkler.club)
-- ✅ Add Cloudflare Access authentication
-- ✅ Create Cloudflare Worker for serverless publishing
+The blog is production-ready as-is. These are optional:
 
-**Phase 4: Polish & Features (Optional)**
 - [ ] Google/GitHub login (easier than email OTP)
-- [ ] Mobile-friendly UI improvements
-- [ ] PWA features ("Add to Home Screen")
 - [ ] Image upload support
-- [ ] Edit published posts
-- [ ] Custom Worker domain (api.sparkler.club)
+- [ ] PWA features ("Add to Home Screen")
+- [ ] Tags support (currently removed for simplicity)
+- [ ] Custom formatting toolbar (currently removed)
 
-See [ROADMAP.md](ROADMAP.md) for detailed implementation notes.
+**Philosophy**: Keep it simple. A timeless blog that can last almost forever.
 
 ## 💰 Cost Breakdown
 
@@ -226,4 +241,4 @@ MIT
 
 **Built for writers who want to own their content.**
 
-Write from anywhere. Publish instantly. No vendor lock-in.
+Write from anywhere. Publish instantly. No vendor lock-in. Built to last forever.
