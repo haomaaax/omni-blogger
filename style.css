@@ -61,6 +61,37 @@
 }
 
 /* Dark theme - Classic Macintosh SE green screen */
+/* Light mode - class-based (manual toggle) */
+.light {
+  --mac-white: #FAFAFA;
+  --mac-paper: #F5F5F0;
+  --mac-gray-light: #E8E8E8;
+  --mac-gray: #C0C0C0;
+  --mac-black: #1A1A1A;
+  --mac-blue: #0000FF;
+  --mac-blue-hover: #0000CC;
+
+  --bg-primary: var(--mac-white);
+  --bg-secondary: var(--mac-paper);
+  --bg-tertiary: var(--mac-gray-light);
+  --text-primary: var(--mac-black);
+  --text-secondary: #505050;
+  --text-placeholder: #A0A0A0;
+  --border-color: #D0D0D0;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  /* Panel colors (for new UI components) */
+  --color-white: var(--mac-white);
+  --color-paper: var(--mac-paper);
+  --color-gray: var(--mac-gray);
+  --color-gray-light: var(--mac-gray-light);
+  --color-black: var(--mac-black);
+  --color-blue: var(--mac-blue);
+  --color-secondary: #505050;
+  --color-hover: var(--mac-white);
+}
+
 /* Dark mode - class-based (manual toggle) */
 .dark {
   --mac-black: #0F0F0F;
