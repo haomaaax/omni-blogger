@@ -17,7 +17,6 @@ const elements = {
   title: document.getElementById('post-title'),
   tags: document.getElementById('post-tags'),
   status: document.getElementById('status'),
-  btnSave: document.getElementById('btn-save'),
   btnPublish: document.getElementById('btn-publish'),
   btnMenu: document.getElementById('btn-menu'),
   btnCloseMenu: document.getElementById('btn-close-menu'),
@@ -803,6 +802,7 @@ function applyTheme(theme) {
   const html = document.documentElement;
   const sunIcon = document.querySelector('.sun-icon');
   const moonIcon = document.querySelector('.moon-icon');
+  const themeLabel = document.getElementById('theme-label');
 
   console.log('Found icons:', { sunIcon: !!sunIcon, moonIcon: !!moonIcon });
 
@@ -811,11 +811,13 @@ function applyTheme(theme) {
     html.classList.add('dark');
     if (sunIcon) sunIcon.classList.add('hidden');
     if (moonIcon) moonIcon.classList.remove('hidden');
+    if (themeLabel) themeLabel.textContent = 'Light Mode';
   } else if (theme === 'light') {
     html.classList.remove('dark');
     html.classList.add('light');
     if (sunIcon) sunIcon.classList.remove('hidden');
     if (moonIcon) moonIcon.classList.add('hidden');
+    if (themeLabel) themeLabel.textContent = 'Dark Mode';
   } else {
     // Auto mode - use system preference
     html.classList.remove('light', 'dark');
@@ -824,9 +826,11 @@ function applyTheme(theme) {
       html.classList.add('dark');
       if (sunIcon) sunIcon.classList.add('hidden');
       if (moonIcon) moonIcon.classList.remove('hidden');
+      if (themeLabel) themeLabel.textContent = 'Light Mode';
     } else {
       if (sunIcon) sunIcon.classList.remove('hidden');
       if (moonIcon) moonIcon.classList.add('hidden');
+      if (themeLabel) themeLabel.textContent = 'Dark Mode';
     }
   }
 
@@ -866,7 +870,6 @@ function init() {
   initAutoSave();
 
   // Event listeners
-  elements.btnSave.addEventListener('click', saveDraft);
   elements.btnPublish.addEventListener('click', publishPost);
   elements.btnMenu.addEventListener('click', openMenu);
   elements.btnCloseMenu.addEventListener('click', closeMenu);
