@@ -224,7 +224,7 @@ Readers can subscribe to your blog and receive email notifications when you publ
 
 **Cost:** $0/month (Resend free tier: 3,000 emails/month)
 
-**Setup:** See [publish-worker/EMAIL-SETUP.md](/publish-worker/EMAIL-SETUP.md) for deployment guide
+**Setup:** See [EMAIL-SETUP.md](EMAIL-SETUP.md) for deployment guide
 
 ## 🔮 Future Enhancements (Optional)
 
