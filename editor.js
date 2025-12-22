@@ -916,5 +916,20 @@ function init() {
   console.log('Blog Editor initialized');
 }
 
+// Initialize theme immediately (before DOM loads to avoid flash)
+if (document.documentElement) {
+  const savedTheme = localStorage.getItem('theme') || 'auto';
+  if (savedTheme === 'dark') {
+    document.documentElement.classList.add('dark');
+  } else if (savedTheme === 'light') {
+    document.documentElement.classList.remove('dark');
+  } else {
+    // Auto - use system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.classList.add('dark');
+    }
+  }
+}
+
 // Start the app
 document.addEventListener('DOMContentLoaded', init);

@@ -1116,3 +1116,16 @@ input:focus-visible {
   width: 14px;
   height: 14px;
 }
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+.hidden {
+  display: none !important;
+}
+
+.sun-icon,
+.moon-icon {
+  width: 20px;
+  height: 20px;
+}
