@@ -15,7 +15,6 @@
 const elements = {
   editor: document.getElementById('editor'),
   title: document.getElementById('post-title'),
-  tags: document.getElementById('post-tags'),
   status: document.getElementById('status'),
   btnPublish: document.getElementById('btn-publish'),
   btnMenu: document.getElementById('btn-menu'),
@@ -48,57 +47,6 @@ let isEditing = false;
 let currentPostSlug = null;
 let currentPostSha = null;
 let postToDelete = null;
-
-// ============================================
-// Toolbar Commands
-// ============================================
-const toolbarCommands = {
-  bold: () => document.execCommand('bold'),
-  italic: () => document.execCommand('italic'),
-  h2: () => {
-    document.execCommand('formatBlock', false, '<h2>');
-  },
-  h3: () => {
-    document.execCommand('formatBlock', false, '<h3>');
-  },
-  ul: () => document.execCommand('insertUnorderedList'),
-  ol: () => document.execCommand('insertOrderedList'),
-  quote: () => {
-    document.execCommand('formatBlock', false, '<blockquote>');
-  },
-  link: () => {
-    const url = prompt('Enter URL:');
-    if (url) {
-      document.execCommand('createLink', false, url);
-    }
-  },
-  code: () => {
-    const selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const code = document.createElement('code');
-      code.textContent = range.toString();
-      range.deleteContents();
-      range.insertNode(code);
-    }
-  }
-};
-
-// ============================================
-// Initialize Toolbar
-// ============================================
-function initToolbar() {
-  document.querySelectorAll('.toolbar button').forEach(button => {
-    const command = button.dataset.command;
-    if (command && toolbarCommands[command]) {
-      button.addEventListener('click', (e) => {
-        e.preventDefault();
-        toolbarCommands[command]();
-        elements.editor.focus();
-      });
-    }
-  });
-}
 
 // ============================================
 // Keyboard Shortcuts
@@ -254,12 +202,11 @@ function saveDrafts(drafts) {
 
 function saveDraft() {
   const title = elements.title.value.trim() || 'Untitled';
-  const tags = elements.tags.value.trim();
   const content = elements.editor.innerHTML;
-  
+
   const drafts = getDrafts();
   const now = new Date().toISOString();
-  
+
   if (currentDraftId) {
     // Update existing draft
     const index = drafts.findIndex(d => d.id === currentDraftId);
@@ -267,7 +214,6 @@ function saveDraft() {
       drafts[index] = {
         ...drafts[index],
         title,
-        tags,
         content,
         updatedAt: now
       };
@@ -278,7 +224,6 @@ function saveDraft() {
     drafts.unshift({
       id: currentDraftId,
       title,
-      tags,
       content,
       createdAt: now,
       updatedAt: now
@@ -297,7 +242,6 @@ function loadDraft(draftId) {
   if (draft) {
     currentDraftId = draft.id;
     elements.title.value = draft.title === 'Untitled' ? '' : draft.title;
-    elements.tags.value = draft.tags || '';
     elements.editor.innerHTML = draft.content;
     closeDraftsPanel();
     showStatus('Draft loaded', 'saved');
@@ -321,7 +265,6 @@ function deleteDraft(draftId) {
 function newPost() {
   currentDraftId = null;
   elements.title.value = '';
-  elements.tags.value = '';
   elements.editor.innerHTML = '';
   elements.status.textContent = '';
 }
@@ -341,7 +284,6 @@ function initAutoSave() {
   
   elements.editor.addEventListener('input', triggerAutoSave);
   elements.title.addEventListener('input', triggerAutoSave);
-  elements.tags.addEventListener('input', triggerAutoSave);
 }
 
 // ============================================
@@ -441,7 +383,6 @@ function showStatus(message, type = '') {
 // ============================================
 async function publishPost() {
   const title = elements.title.value.trim();
-  const tags = elements.tags.value.trim();
   const htmlContent = elements.editor.innerHTML;
 
   // Validation
@@ -459,7 +400,7 @@ async function publishPost() {
 
   // Convert to Markdown
   const markdown = htmlToMarkdown(htmlContent);
-  const frontMatter = generateFrontMatter(title, tags);
+  const frontMatter = generateFrontMatter(title, '');
   const fullContent = frontMatter + markdown;
   const slug = generateSlug(title);
   const filename = `${slug}.md`;
@@ -647,9 +588,6 @@ async function loadPostForEditing(slug) {
 
     // Populate editor
     elements.title.value = post.frontmatter.title || '';
-    elements.tags.value = Array.isArray(post.frontmatter.tags)
-      ? post.frontmatter.tags.join(', ')
-      : '';
 
     // Convert markdown to HTML for the editor
     elements.editor.innerHTML = markdownToHtml(post.content);
@@ -865,7 +803,6 @@ function init() {
   console.log('🌐 Blog URL:', CONFIG.blogUrl);
 
   initTheme();
-  initToolbar();
   initKeyboardShortcuts();
   initAutoSave();
 

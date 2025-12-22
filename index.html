@@ -78,43 +78,18 @@
     <!-- Main Editor -->
     <main class="editor-container">
       <!-- Title Input -->
-      <input 
-        type="text" 
-        id="post-title" 
-        class="title-input" 
+      <input
+        type="text"
+        id="post-title"
+        class="title-input"
         placeholder="Post title..."
         autocomplete="off"
       >
 
-      <!-- Tags Input -->
-      <input 
-        type="text" 
-        id="post-tags" 
-        class="tags-input" 
-        placeholder="Tags (comma separated): thoughts, running, qa..."
-        autocomplete="off"
-      >
-
-      <!-- Formatting Toolbar -->
-      <div class="toolbar">
-        <button type="button" data-command="bold" title="Bold (⌘B)"><strong>B</strong></button>
-        <button type="button" data-command="italic" title="Italic (⌘I)"><em>I</em></button>
-        <span class="toolbar-divider"></span>
-        <button type="button" data-command="h2" title="Heading">H2</button>
-        <button type="button" data-command="h3" title="Subheading">H3</button>
-        <span class="toolbar-divider"></span>
-        <button type="button" data-command="ul" title="Bullet List">•</button>
-        <button type="button" data-command="ol" title="Numbered List">1.</button>
-        <span class="toolbar-divider"></span>
-        <button type="button" data-command="quote" title="Quote">"</button>
-        <button type="button" data-command="link" title="Insert Link">🔗</button>
-        <button type="button" data-command="code" title="Code">&lt;/&gt;</button>
-      </div>
-
       <!-- WYSIWYG Editor -->
-      <div 
-        id="editor" 
-        class="editor" 
+      <div
+        id="editor"
+        class="editor"
         contenteditable="true"
         data-placeholder="Start writing..."
       ></div>
