@@ -14,10 +14,12 @@ This is a **timeless blog** that focuses on pure writing, not SEO optimization. 
 - **Web-Based Editor** - Access from any device (Mac, iPhone, iPad)
 - **Auto-save** - Drafts saved automatically to browser storage
 - **One-click Publish** - Commits to GitHub, builds and deploys automatically
+- **Email Subscriptions** - Readers can subscribe and get notified of new posts
 - **Classic Aesthetic** - Ink-on-paper color palette, typewriter feel
 - **Dark Mode** - Toggle in menu (sun/moon icons)
 - **Secure** - Protected with Cloudflare Access authentication
 - **Serverless** - No local server needed, fully cloud-based
+- **Data Ownership** - Own your subscribers, logic, and content
 
 ## 🌐 Live Demo
 
@@ -195,11 +197,34 @@ Run: node server.js
 | Web Publishing | ✅ | Via Cloudflare Worker |
 | Edit Published Posts | ✅ | Load, edit, update existing posts |
 | Delete Posts | ✅ | With confirmation dialog |
+| Email Subscriptions | ✅ | Double opt-in, auto-notify on new posts |
 | Authentication | ✅ | Cloudflare Access (email OTP) |
 | Mobile Support | ✅ | Works on iPhone, iPad |
 | Dark Mode | ✅ | Toggle in menu |
 | Classic Aesthetic | ✅ | Ink-on-paper, typewriter feel |
+| Data Ownership | ✅ | Own all subscriber data in Cloudflare KV |
 | Offline Editing | ⚠️ | Drafts work offline, publishing requires internet |
+
+## 📧 Email Subscriptions
+
+Readers can subscribe to your blog and receive email notifications when you publish new posts - Substack-style, but you own everything.
+
+**How it works:**
+1. Reader enters email on sparkler.club
+2. Receives confirmation email (double opt-in)
+3. Clicks to confirm subscription
+4. Gets notified when you publish new posts
+5. Can unsubscribe anytime with one click
+
+**What you own:**
+- ✅ All subscriber email addresses (stored in Cloudflare KV)
+- ✅ All subscription logic (in your Cloudflare Worker)
+- ✅ Complete control over email content
+- ✅ Can export and move to different service anytime
+
+**Cost:** $0/month (Resend free tier: 3,000 emails/month)
+
+**Setup:** See [publish-worker/EMAIL-SETUP.md](/publish-worker/EMAIL-SETUP.md) for deployment guide
 
 ## 🔮 Future Enhancements (Optional)
 
