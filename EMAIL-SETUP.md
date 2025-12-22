@@ -177,7 +177,7 @@ Now we need to add a subscription form to your blog so readers can subscribe.
 ### 5.1 Locate Your Blog Repository
 
 ```bash
-cd ~/sparkler/max-notes  # or wherever your Hugo blog is
+cd ~/sparkler/my-blog  # or wherever your Hugo blog is
 ```
 
 ### 5.2 Find Your Theme's Footer Template
