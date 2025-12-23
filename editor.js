@@ -153,26 +153,79 @@ function htmlToMarkdown(html) {
 }
 
 // ============================================
+// Extract Keywords from Content
+// ============================================
+function extractKeywords(text, title) {
+  const stopWords = new Set([
+    'the', 'is', 'at', 'which', 'on', 'a', 'an', 'and', 'or', 'but',
+    'in', 'with', 'to', 'for', 'of', 'as', 'by', 'that', 'this', 'it',
+    'from', 'are', 'was', 'were', 'been', 'be', 'have', 'has', 'had',
+    'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may',
+    'might', 'can', 'about', 'into', 'through', 'during', 'before',
+    'after', 'above', 'below', 'between', 'under', 'again', 'further',
+    'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how',
+    'all', 'both', 'each', 'few', 'more', 'most', 'other', 'some',
+    'such', 'only', 'own', 'same', 'than', 'too', 'very', 'just'
+  ]);
+
+  const words = (title + ' ' + text.substring(0, 1000))
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(word => word.length > 3 && !stopWords.has(word));
+
+  // Count frequency
+  const freq = {};
+  words.forEach(word => freq[word] = (freq[word] || 0) + 1);
+
+  // Get top 8 keywords
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([word]) => word);
+}
+
+// ============================================
 // Generate Hugo Front Matter
 // ============================================
-function generateFrontMatter(title, tags) {
+function generateFrontMatter(title, htmlContent) {
   const date = new Date().toISOString();
-  const tagArray = tags
-    .split(',')
-    .map(t => t.trim())
-    .filter(t => t.length > 0);
-  
+
+  // Extract text from HTML for metadata generation
+  const temp = document.createElement('div');
+  temp.innerHTML = htmlContent;
+  const textContent = (temp.textContent || '').trim();
+
+  // Auto-generate meta description (160 chars max)
+  const description = textContent.length > 0
+    ? textContent.substring(0, 157).trim() + '...'
+    : '';
+
+  // Auto-generate summary (250 chars max)
+  const summary = textContent.length > 0
+    ? textContent.substring(0, 247).trim() + '...'
+    : '';
+
+  // Auto-generate keywords from content
+  const keywords = extractKeywords(textContent, title);
+
+  // Generate slug for URL
+  const slug = generateSlug(title);
+
   let frontMatter = `---
-title: "${title}"
+title: "${title.replace(/"/g, '\\"')}"
 date: ${date}
-draft: false`;
-  
-  if (tagArray.length > 0) {
-    frontMatter += `\ntags: [${tagArray.map(t => `"${t}"`).join(', ')}]`;
-  }
-  
-  frontMatter += `\n---\n\n`;
-  
+draft: false
+description: "${description.replace(/"/g, '\\"')}"
+summary: "${summary.replace(/"/g, '\\"')}"
+keywords: [${keywords.map(k => `"${k}"`).join(', ')}]
+author: "Max Chen"
+slug: "${slug}"
+tags: []
+---
+
+`;
+
   return frontMatter;
 }
 
@@ -400,7 +453,7 @@ async function publishPost() {
 
   // Convert to Markdown
   const markdown = htmlToMarkdown(htmlContent);
-  const frontMatter = generateFrontMatter(title, '');
+  const frontMatter = generateFrontMatter(title, htmlContent);
   const fullContent = frontMatter + markdown;
   const slug = generateSlug(title);
   const filename = `${slug}.md`;
