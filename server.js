@@ -96,32 +96,63 @@ function serveStaticFile(res, filePath) {
 // ============================================
 async function handlePublish(req, res) {
   let body = '';
-  
+
   req.on('data', chunk => {
     body += chunk.toString();
   });
-  
+
   req.on('end', async () => {
     try {
-      const { filename, content } = JSON.parse(body);
-      
+      const { filename, content, images } = JSON.parse(body);
+
       if (!filename || !content) {
         return sendJSON(res, 400, { error: 'Missing filename or content' });
       }
-      
+
+      // Upload images first (if any)
+      let imagesUploaded = 0;
+      if (images && Array.isArray(images) && images.length > 0) {
+        console.log(`📸 Uploading ${images.length} images...`);
+
+        const imagesDir = path.join(CONFIG.blogPath, 'static', 'images');
+
+        // Ensure images directory exists
+        if (!fs.existsSync(imagesDir)) {
+          fs.mkdirSync(imagesDir, { recursive: true });
+        }
+
+        for (const image of images) {
+          try {
+            // Decode base64 and write file
+            const imageBuffer = Buffer.from(image.content, 'base64');
+            const imagePath = path.join(imagesDir, image.filename);
+
+            fs.writeFileSync(imagePath, imageBuffer);
+            console.log(`✅ Saved image: ${image.filename}`);
+            imagesUploaded++;
+          } catch (err) {
+            console.error(`❌ Failed to save image ${image.filename}:`, err);
+            return sendJSON(res, 500, {
+              error: `Failed to save image: ${image.filename}`,
+              details: err.message
+            });
+          }
+        }
+      }
+
       // Save the markdown file
       const postsDir = path.join(CONFIG.blogPath, 'content', 'posts');
       const filePath = path.join(postsDir, filename);
-      
+
       // Ensure posts directory exists
       if (!fs.existsSync(postsDir)) {
         fs.mkdirSync(postsDir, { recursive: true });
       }
-      
+
       // Write the file
       fs.writeFileSync(filePath, content, 'utf8');
       console.log(`✅ Saved: ${filePath}`);
-      
+
       // Build the site with Hugo
       console.log('🔨 Building site with Hugo...');
       try {
@@ -131,7 +162,7 @@ async function handlePublish(req, res) {
         console.error('❌ Hugo build failed:', err.stderr);
         return sendJSON(res, 500, { error: 'Hugo build failed', details: err.stderr });
       }
-      
+
       // Deploy if configured
       if (CONFIG.deployCommand) {
         console.log('🚀 Deploying...');
@@ -143,13 +174,14 @@ async function handlePublish(req, res) {
           return sendJSON(res, 500, { error: 'Deploy failed', details: err.stderr });
         }
       }
-      
-      sendJSON(res, 200, { 
-        success: true, 
+
+      sendJSON(res, 200, {
+        success: true,
         message: 'Post published successfully',
-        filename 
+        filename,
+        imagesUploaded
       });
-      
+
     } catch (err) {
       console.error('Error:', err);
       sendJSON(res, 500, { error: 'Server error', details: err.message });
@@ -207,7 +239,7 @@ const server = http.createServer((req, res) => {
   }
   
   // API Routes
-  if (url.pathname === '/publish' && req.method === 'POST') {
+  if ((url.pathname === '/publish' || url.pathname === '/') && req.method === 'POST') {
     return handlePublish(req, res);
   }
 

@@ -48,6 +48,10 @@ let currentPostSlug = null;
 let currentPostSha = null;
 let postToDelete = null;
 
+// Image upload state
+let pendingImages = []; // Array of {id, filename, base64, alt, mimeType, size}
+let imageCounter = 0;
+
 // ============================================
 // Keyboard Shortcuts
 // ============================================
@@ -144,12 +148,152 @@ function htmlToMarkdown(html) {
   }
   
   let markdown = convertNode(temp);
-  
+
   // Clean up extra newlines
   markdown = markdown.replace(/\n{3,}/g, '\n\n');
   markdown = markdown.trim();
-  
+
   return markdown;
+}
+
+// ============================================
+// Image Upload Management
+// ============================================
+
+function generateImageFilename(originalName) {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  const ext = originalName.split('.').pop().toLowerCase();
+  const baseName = originalName
+    .replace(/\.[^.]+$/, '') // Remove extension
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '-') // Replace non-alphanumeric with dash
+    .replace(/-+/g, '-') // Collapse multiple dashes
+    .replace(/^-|-$/g, '') // Remove leading/trailing dashes
+    .substring(0, 30); // Limit length
+
+  return `${baseName}-${timestamp}-${random}.${ext}`;
+}
+
+function validateImageFile(file) {
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error(`Invalid file type: ${file.type}. Allowed: JPG, PNG, GIF, WebP`);
+  }
+
+  if (file.size > maxSize) {
+    throw new Error(`File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Max: 5MB`);
+  }
+
+  return true;
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]); // Remove data:image/xxx;base64, prefix
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleImageUpload(files) {
+  console.log('handleImageUpload called with', files.length, 'files');
+
+  for (const file of files) {
+    try {
+      console.log('Processing file:', file.name, file.type, file.size);
+      validateImageFile(file);
+
+      const id = `img-${++imageCounter}`;
+      const filename = generateImageFilename(file.name);
+      console.log('Generated filename:', filename);
+
+      const base64 = await fileToBase64(file);
+      console.log('Base64 encoded, length:', base64.length);
+
+      const alt = file.name.replace(/\.[^.]+$/, ''); // Default alt text from filename
+
+      const imageData = {
+        id,
+        filename,
+        base64,
+        alt,
+        mimeType: file.type,
+        size: file.size
+      };
+
+      pendingImages.push(imageData);
+      console.log('Added to pendingImages, total:', pendingImages.length);
+
+      // Show status first
+      showStatus(`Image added: ${filename}`, 'saved');
+
+      // Insert markdown syntax at cursor position
+      console.log('Calling insertImageMarkdown...');
+      insertImageMarkdown(imageData);
+      console.log('insertImageMarkdown completed');
+
+    } catch (error) {
+      alert(error.message);
+      console.error('Image upload error:', error);
+    }
+  }
+}
+
+function insertImageMarkdown(imageData) {
+  console.log('insertImageMarkdown called with:', imageData);
+
+  // Create markdown text
+  const markdownText = `![${imageData.alt}](/images/${imageData.filename})`;
+  console.log('Markdown text:', markdownText);
+
+  // Focus the editor first
+  elements.editor.focus();
+
+  // Get current HTML content
+  const currentHTML = elements.editor.innerHTML;
+  console.log('Current editor HTML:', currentHTML.substring(0, 100));
+
+  // Simple approach: append to the end with a newline
+  if (currentHTML.trim() === '') {
+    // Empty editor
+    elements.editor.innerHTML = markdownText + ' ';
+  } else {
+    // Append to existing content
+    elements.editor.innerHTML = currentHTML + '<br>' + markdownText + ' ';
+  }
+
+  console.log('New editor HTML:', elements.editor.innerHTML.substring(0, 200));
+
+  // Move cursor to end
+  const range = document.createRange();
+  range.selectNodeContents(elements.editor);
+  range.collapse(false);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+
+  // Trigger auto-save
+  elements.editor.dispatchEvent(new Event('input'));
+  console.log('Triggered input event for auto-save');
+}
+
+function getPendingImagesForPublish() {
+  // Extract image references from current content
+  const markdown = htmlToMarkdown(elements.editor.innerHTML);
+  const imageRegex = /!\[([^\]]*)\]\(\/images\/([^)]+)\)/g;
+  const referencedFilenames = [];
+  let match;
+
+  while ((match = imageRegex.exec(markdown)) !== null) {
+    referencedFilenames.push(match[2]); // filename
+  }
+
+  // Only return images that are actually used in the content
+  return pendingImages.filter(img => referencedFilenames.includes(img.filename));
 }
 
 // ============================================
@@ -268,6 +412,8 @@ function saveDraft() {
         ...drafts[index],
         title,
         content,
+        // Don't save images in localStorage (too large - causes QuotaExceededError)
+        // Images will be uploaded when publishing
         updatedAt: now
       };
     }
@@ -278,6 +424,8 @@ function saveDraft() {
       id: currentDraftId,
       title,
       content,
+      // Don't save images in localStorage (too large - causes QuotaExceededError)
+      // Images will be uploaded when publishing
       createdAt: now,
       updatedAt: now
     });
@@ -291,11 +439,17 @@ function saveDraft() {
 function loadDraft(draftId) {
   const drafts = getDrafts();
   const draft = drafts.find(d => d.id === draftId);
-  
+
   if (draft) {
     currentDraftId = draft.id;
     elements.title.value = draft.title === 'Untitled' ? '' : draft.title;
     elements.editor.innerHTML = draft.content;
+
+    // Note: Images are not saved in drafts due to localStorage size limits
+    // If you reload a draft with image markdown, you'll need to re-upload images
+    pendingImages = [];
+    imageCounter = 0;
+
     closeDraftsPanel();
     showStatus('Draft loaded', 'saved');
   }
@@ -320,6 +474,8 @@ function newPost() {
   elements.title.value = '';
   elements.editor.innerHTML = '';
   elements.status.textContent = '';
+  pendingImages = [];
+  imageCounter = 0;
 }
 
 // ============================================
@@ -458,34 +614,48 @@ async function publishPost() {
   const slug = generateSlug(title);
   const filename = `${slug}.md`;
 
+  // Get images that are actually used in the post
+  const imagesToUpload = getPendingImagesForPublish();
+
   showStatus(isEditing ? 'Updating...' : 'Publishing...', '');
 
   try {
     let response;
 
+    // Prepare request payload
+    const payload = {
+      filename,
+      content: fullContent
+    };
+
+    // Add images if any
+    if (imagesToUpload.length > 0) {
+      payload.images = imagesToUpload.map(img => ({
+        filename: img.filename,
+        content: img.base64,
+        mimeType: img.mimeType
+      }));
+    }
+
     if (isEditing && currentPostSlug && currentPostSha) {
       // Update existing post
+      payload.sha = currentPostSha;
+
       response = await fetch(`${CONFIG.apiUrl}/posts/${currentPostSlug}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          content: fullContent,
-          sha: currentPostSha
-        })
+        body: JSON.stringify(payload)
       });
     } else {
-      // Create new post (backwards compatible endpoint)
+      // Create new post
       response = await fetch(`${CONFIG.apiUrl}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          filename,
-          content: fullContent
-        })
+        body: JSON.stringify(payload)
       });
     }
 
@@ -505,6 +675,9 @@ async function publishPost() {
       drafts = drafts.filter(d => d.id !== currentDraftId);
       saveDrafts(drafts);
     }
+
+    // Clear pending images
+    pendingImages = [];
 
     // Reset editor and edit mode
     startNewPost();
@@ -871,6 +1044,17 @@ function init() {
   elements.btnCloseModal.addEventListener('click', closeModal);
   elements.btnCancelDelete.addEventListener('click', cancelDelete);
   elements.btnConfirmDelete.addEventListener('click', deletePost);
+
+  // Image upload
+  const imageUpload = document.getElementById('image-upload');
+  if (imageUpload) {
+    imageUpload.addEventListener('change', async (e) => {
+      if (e.target.files.length > 0) {
+        await handleImageUpload(Array.from(e.target.files));
+        e.target.value = ''; // Reset input
+      }
+    });
+  }
 
   // Theme toggle
   const themeToggleBtn = document.getElementById('theme-toggle');

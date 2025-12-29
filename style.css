@@ -295,6 +295,20 @@ button {
   background-color: var(--bg-tertiary);
 }
 
+/* Image Upload Button */
+#image-upload {
+  display: none;
+}
+
+label[for="image-upload"] {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+label[for="image-upload"]:active {
+  transform: translateY(1px);
+}
+
 /* ============================================
    Editor Container - Optimized for reading
    ============================================ */
