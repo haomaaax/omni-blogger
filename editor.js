@@ -142,6 +142,11 @@ function htmlToMarkdown(html) {
         return '\n---\n\n';
       case 'div':
         return `${children}\n\n`;
+      case 'img':
+        // Use data-image-path if available (for uploaded images), otherwise use src
+        const imagePath = node.getAttribute('data-image-path') || node.getAttribute('src') || '';
+        const alt = node.getAttribute('alt') || '';
+        return `![${alt}](${imagePath})`;
       default:
         return children;
     }
@@ -246,9 +251,10 @@ async function handleImageUpload(files) {
 function insertImageMarkdown(imageData) {
   console.log('insertImageMarkdown called with:', imageData);
 
-  // Create markdown text
-  const markdownText = `![${imageData.alt}](/images/${imageData.filename})`;
-  console.log('Markdown text:', markdownText);
+  // Create an actual img tag with base64 data for preview
+  // Store the final path in data-image-path for conversion on publish
+  const imgTag = `<img src="data:${imageData.mimeType};base64,${imageData.base64}" alt="${imageData.alt}" data-image-path="/images/${imageData.filename}">`;
+  console.log('Image tag created with base64 preview');
 
   // Focus the editor first
   elements.editor.focus();
@@ -260,13 +266,13 @@ function insertImageMarkdown(imageData) {
   // Simple approach: append to the end with a newline
   if (currentHTML.trim() === '') {
     // Empty editor
-    elements.editor.innerHTML = markdownText + ' ';
+    elements.editor.innerHTML = imgTag + '<br>';
   } else {
     // Append to existing content
-    elements.editor.innerHTML = currentHTML + '<br>' + markdownText + ' ';
+    elements.editor.innerHTML = currentHTML + '<br>' + imgTag + '<br>';
   }
 
-  console.log('New editor HTML:', elements.editor.innerHTML.substring(0, 200));
+  console.log('New editor HTML with base64 image inserted');
 
   // Move cursor to end
   const range = document.createRange();

@@ -447,6 +447,15 @@ label[for="image-upload"]:active {
   font-style: italic;
 }
 
+/* Image styling in editor */
+.editor img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em 0;
+  border-radius: 4px;
+}
+
 /* Editor content - Classic Mac typography */
 .editor h2 {
   font-family: var(--font-display);
