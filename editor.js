@@ -597,6 +597,12 @@ function showStatus(message, type = '') {
 // Publish Post
 // ============================================
 async function publishPost() {
+  // Check if online before attempting to publish
+  if (!navigator.onLine) {
+    alert('No internet connection. Your draft has been saved locally. Please connect to the internet to publish.');
+    return;
+  }
+
   const title = elements.title.value.trim();
   const htmlContent = elements.editor.innerHTML;
 
@@ -1112,6 +1118,63 @@ function init() {
 
   // Focus editor
   elements.editor.focus();
+
+  // ============================================
+  // PWA Features
+  // ============================================
+
+  // Register Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          console.log('✅ [PWA] Service Worker registered:', registration.scope);
+
+          // Check for updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('🔄 [PWA] New version available');
+              }
+            });
+          });
+        })
+        .catch((error) => {
+          console.log('❌ [PWA] Service Worker registration failed:', error);
+        });
+    });
+  }
+
+  // Handle Install Prompt
+  let deferredInstallPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (event) => {
+    console.log('💡 [PWA] Install prompt available');
+    event.preventDefault();
+    deferredInstallPrompt = event;
+  });
+
+  window.addEventListener('appinstalled', () => {
+    console.log('✅ [PWA] App installed successfully');
+    deferredInstallPrompt = null;
+  });
+
+  // Online/Offline Status
+  function updateOnlineStatus() {
+    const isOnline = navigator.onLine;
+    console.log(`🌐 [PWA] Connection: ${isOnline ? 'online' : 'offline'}`);
+
+    if (!isOnline) {
+      showStatus('Offline - drafts saved locally', 'warning');
+    } else if (elements.status.textContent.includes('Offline')) {
+      showStatus('', '');
+    }
+  }
+
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus();
 
   console.log('Blog Editor initialized');
 }

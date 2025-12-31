@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#1A1A1A" rx="64"/>
+
+  <!-- Fountain Pen Icon -->
+  <!-- Pen body (main shaft) -->
+  <path d="M 180 140 L 280 240 L 260 260 L 160 160 Z" fill="#1C3A52"/>
+
+  <!-- Pen nib -->
+  <path d="M 280 240 L 320 280 L 300 300 L 260 260 Z" fill="#5A7A92"/>
+
+  <!-- Pen tip (writing point) -->
+  <path d="M 320 280 L 340 300 L 320 320 L 300 300 Z" fill="#1C3A52"/>
+
+  <!-- Ink line (decorative) -->
+  <path d="M 340 300 L 380 340 Q 390 350 370 370" stroke="#1C3A52" stroke-width="3" fill="none" opacity="0.5"/>
+
+  <!-- Pen clip -->
+  <rect x="165" y="120" width="8" height="40" fill="#5A7A92" rx="4"/>
+
+  <!-- Accent circle (pen cap detail) -->
+  <circle cx="170" cy="150" r="12" fill="none" stroke="#1C3A52" stroke-width="2"/>
+
+  <!-- "O" letter (subtle branding) -->
+  <text x="256" y="420" font-family="Georgia, serif" font-size="80" fill="#5A7A92" text-anchor="middle" opacity="0.3">O</text>
+</svg>
