@@ -1,7 +1,7 @@
 // Omni Blogger - Service Worker
-// Version: 1.1
+// Version: 1.2
 
-const CACHE_VERSION = 'omni-v2';
+const CACHE_VERSION = 'omni-v3';
 const CACHE_FILES = [
   '/',
   '/index.html',
