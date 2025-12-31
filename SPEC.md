@@ -71,6 +71,8 @@ Omni Blogger is a timeless, minimalist web-based blog editor designed for pure w
 - HTML to Markdown converter
 - Base64 image preview
 - localStorage for drafts
+- Service Worker (offline caching)
+- Web App Manifest (PWA installation)
 
 **Backend**
 - Cloudflare Workers (serverless API)
@@ -213,6 +215,60 @@ slug: "user-provided-title"         # Auto: From title
 - No vendor lock-in
 
 **Cost**: Free (Resend: 3,000 emails/month)
+
+### 6. Progressive Web App (PWA)
+
+**Installation**:
+- Installable as native-like app on mobile and desktop
+- Custom "Install App" button in menu
+- Browser install prompt support (Chrome, Edge, Safari)
+- Pen nib app icon with dark theme (#1A1A1A)
+
+**Offline Capabilities**:
+- Service Worker caches static assets (HTML, CSS, JS, icons)
+- Cache-first strategy for instant loads
+- Works offline after first visit
+- Auto-updates on new deployments
+- Prevents publish attempts when offline
+
+**Service Worker Features**:
+```javascript
+// Cache version management
+const CACHE_VERSION = 'omni-v4';
+
+// Cached files
+- / (root)
+- /index.html
+- /style.css
+- /editor.js
+- /config.js
+- /manifest.json
+- /icons/*.png
+
+// Strategy: Cache-first for static assets
+// API requests always go to network
+```
+
+**App Manifest**:
+- Name: "Omni Blogger"
+- Short name: "Omni"
+- Display mode: Standalone (fullscreen, no browser UI)
+- Theme color: #1C3A52 (ink blue)
+- Background: #1A1A1A (dark)
+- Icons: 512x512, 192x192, 180x180, 32x32
+
+**Benefits**:
+- **Faster loads**: Subsequent visits load instantly from cache
+- **Offline writing**: Draft locally even without internet
+- **Native feel**: Full-screen app experience
+- **Home screen access**: One tap to open
+- **Reduced data usage**: Assets cached locally
+
+**Browser Support**:
+- ✅ Chrome/Edge on Android (full PWA support)
+- ✅ Safari on iOS (Add to Home Screen)
+- ✅ Desktop Chrome/Edge (installable)
+- ⚠️ Firefox (service worker but no install prompt)
 
 ---
 
@@ -677,8 +733,14 @@ wrangler dev
 ### v2.0 (December 31, 2025)
 - ✨ Added image upload with preview
 - ✨ Made blog repository private
+- ✨ Added Progressive Web App (PWA) support
+- ✨ Service Worker for offline caching
+- ✨ Installable as native app (iOS, Android, desktop)
+- ✨ Custom install button in menu
+- ✨ Pen nib app icon with dark theme
 - 🐛 Fixed image markdown rendering
 - 🐛 Fixed scrollbar issues with large images
+- 🐛 Fixed app icon truncation on mobile
 - 🔒 Updated GitHub token scope for private repo
 
 ### v1.5 (December 22, 2025)

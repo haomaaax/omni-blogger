@@ -12,6 +12,8 @@ This is a **timeless blog** that focuses on pure writing, not SEO optimization. 
 
 - **Pure Minimalism** - Just title and content. No toolbar, no tags, no clutter
 - **Image Upload** - Upload images with instant preview, auto-upload to GitHub
+- **Progressive Web App** - Install as native app on iOS, Android, and desktop
+- **Offline Support** - Service Worker caches app for instant loads and offline drafting
 - **Web-Based Editor** - Access from any device (Mac, iPhone, iPad)
 - **Auto-save** - Drafts saved automatically to browser storage
 - **One-click Publish** - Commits to GitHub, builds and deploys automatically

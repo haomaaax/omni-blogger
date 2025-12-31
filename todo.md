@@ -33,6 +33,10 @@
 - ✅ Serverless publishing (Cloudflare Worker)
 - ✅ Auto-generated metadata (date, keywords, description)
 - ✅ Image upload with preview
+- ✅ Progressive Web App (PWA)
+- ✅ Service Worker (offline caching)
+- ✅ App installation (iOS, Android, desktop)
+- ✅ Offline writing support
 - ✅ Edit published posts
 - ✅ Delete posts with confirmation
 - ✅ Email subscriptions (double opt-in)
@@ -73,13 +77,7 @@
 
 Future improvements (not currently planned):
 
-### Phase 5: PWA Features
-- [ ] Add to Home Screen support
-- [ ] App manifest
-- [ ] Service worker for offline editing
-- [ ] Custom app icon
-
-### Phase 6: Advanced Features
+### Phase 7: Advanced Features
 - [ ] Drag & drop image upload
 - [ ] Image optimization/resizing
 - [ ] Paste images from clipboard
@@ -88,7 +86,7 @@ Future improvements (not currently planned):
 - [ ] Categories/tags support
 - [ ] Search functionality
 
-### Phase 7: Multi-Tenant
+### Phase 8: Multi-Tenant
 - [ ] User management
 - [ ] Per-user blogs (/username paths)
 - [ ] Billing system
@@ -185,6 +183,9 @@ git push
 
 ✅ Can write and publish from any device
 ✅ No local server required
+✅ Installable as native app (PWA)
+✅ Offline support for drafting
+✅ Instant loads from cache
 ✅ Images upload and display correctly
 ✅ Authentication working (Cloudflare Access)
 ✅ Auto-save working (every 2 seconds)

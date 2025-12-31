@@ -23,6 +23,8 @@ A minimalist web-based blog editor for pure writing. No distractions, just you a
 
 That's it! No setup, no local server, no technical knowledge required.
 
+**Pro Tip:** Install as an app for faster access! Open the ☰ menu → "Install App" (see [Install as App](#install-as-app-progressive-web-app) section below).
+
 ---
 
 ## Features
@@ -171,13 +173,51 @@ The editor works perfectly on mobile:
 - Images scale automatically
 - Auto-save works offline
 
-### Add to Home Screen (Optional)
+### Install as App (Progressive Web App)
 
-For app-like experience:
+Omni Blogger can be installed as a native-like app on your device for a better experience!
+
+**Benefits:**
+- **Faster loads**: App loads instantly from cache after first visit
+- **Offline writing**: Draft locally even without internet (publish when back online)
+- **Native feel**: Full-screen app without browser UI
+- **Home screen access**: One tap to open your editor
+- **Reduced data usage**: Assets cached on your device
+
+**How to Install:**
+
+**Option 1: Custom Install Button (Easiest)**
+1. Open the editor in your browser
+2. Click the ☰ menu
+3. Look for "Install App" button (with download icon)
+4. Tap it and confirm installation
+5. App appears on your home screen!
+
+**Option 2: Browser Menu**
+
+*On iPhone/iPad (Safari):*
 1. Open editor.sparkler.club in Safari
-2. Tap Share button
-3. Tap "Add to Home Screen"
-4. Editor now appears as app icon
+2. Tap the Share button (square with arrow)
+3. Scroll and tap "Add to Home Screen"
+4. Tap "Add"
+
+*On Android (Chrome):*
+1. Open editor in Chrome
+2. Tap the 3-dot menu (⋮)
+3. Tap "Install app" or "Add to Home screen"
+4. Confirm installation
+
+*On Desktop (Chrome/Edge):*
+1. Open editor in Chrome or Edge
+2. Look for install icon in address bar
+3. Click it and confirm
+4. App appears in your app drawer/Start menu
+
+**App Icon:**
+- Dark background with clean pen nib design
+- Matches your writing-focused aesthetic
+
+**Note:** The custom "Install App" button appears automatically when the app meets installation criteria (may take a few visits). If you don't see it, use the browser menu method instead.
 
 ---
 
