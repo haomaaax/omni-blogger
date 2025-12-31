@@ -11,6 +11,7 @@ This is a **timeless blog** that focuses on pure writing, not SEO optimization. 
 ## 🎯 Features
 
 - **Pure Minimalism** - Just title and content. No toolbar, no tags, no clutter
+- **Image Upload** - Upload images with instant preview, auto-upload to GitHub
 - **Web-Based Editor** - Access from any device (Mac, iPhone, iPad)
 - **Auto-save** - Drafts saved automatically to browser storage
 - **One-click Publish** - Commits to GitHub, builds and deploys automatically
@@ -19,6 +20,7 @@ This is a **timeless blog** that focuses on pure writing, not SEO optimization. 
 - **Dark Mode** - Toggle in menu (sun/moon icons)
 - **Secure** - Protected with Cloudflare Access authentication
 - **Serverless** - No local server needed, fully cloud-based
+- **Private Repository** - Blog content stored in private GitHub repo
 - **Data Ownership** - Own your subscribers, logic, and content
 
 ## 🌐 Live Demo
@@ -193,6 +195,7 @@ Run: node server.js
 | Feature | Status | Notes |
 |---------|--------|-------|
 | Minimalist Editor | ✅ | Just title + content, no clutter |
+| Image Upload | ✅ | Instant preview, auto-upload to GitHub |
 | Auto-save Drafts | ✅ | Saved to browser localStorage every 2s |
 | Web Publishing | ✅ | Via Cloudflare Worker |
 | Edit Published Posts | ✅ | Load, edit, update existing posts |
@@ -202,6 +205,7 @@ Run: node server.js
 | Mobile Support | ✅ | Works on iPhone, iPad |
 | Dark Mode | ✅ | Toggle in menu |
 | Classic Aesthetic | ✅ | Ink-on-paper, typewriter feel |
+| Private Repository | ✅ | Blog content stored privately on GitHub |
 | Data Ownership | ✅ | Own all subscriber data in Cloudflare KV |
 | Offline Editing | ⚠️ | Drafts work offline, publishing requires internet |
 
@@ -231,8 +235,10 @@ Readers can subscribe to your blog and receive email notifications when you publ
 The blog is production-ready as-is. These are optional:
 
 - [ ] Google/GitHub login (easier than email OTP)
-- [ ] Image upload support
 - [ ] PWA features ("Add to Home Screen")
+- [ ] Drag & drop image upload
+- [ ] Image optimization/resizing
+- [ ] Post scheduling
 - [ ] Tags support (currently removed for simplicity)
 - [ ] Custom formatting toolbar (currently removed)
 

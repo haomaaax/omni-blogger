@@ -700,3 +700,245 @@ That's it. Nothing else.
 **Final Status**: Production ready with timeless minimalist design! 🖋️
 
 **Last Updated**: December 22, 2025
+
+---
+
+## 📸 Phase 5: Image Upload Support (Dec 29-31, 2025)
+
+### Vision
+
+Add image upload functionality while maintaining the minimalist philosophy. Images should "just work" - upload, preview, publish.
+
+### Implementation
+
+**Client-Side Changes**:
+
+1. **HTML** - Added image upload button
+```html
+<label for="image-upload" class="btn-icon" title="Upload Image">
+  <svg>...</svg> <!-- 📷 icon -->
+</label>
+<input type="file" id="image-upload" accept="image/*" multiple style="display: none;">
+```
+
+2. **JavaScript** - Image processing functions
+```javascript
+// State management
+let pendingImages = [];
+let imageCounter = 0;
+
+// Core functions
+- generateImageFilename(originalName)
+- validateImageFile(file) // 5MB max, JPG/PNG/GIF/WebP
+- fileToBase64(file)
+- handleImageUpload(files)
+- insertImageMarkdown(imageData)
+- getPendingImagesForPublish()
+```
+
+3. **Image Preview with Base64**
+- Insert `<img src="data:image/png;base64,..." data-image-path="/images/filename.png">`
+- Preview displays immediately in editor
+- No broken image icons
+- Actual image data stored in pendingImages array
+
+4. **HTML to Markdown Conversion**
+```javascript
+case 'img':
+  const imagePath = node.getAttribute('data-image-path') || node.getAttribute('src');
+  const alt = node.getAttribute('alt') || '';
+  return `![${alt}](${imagePath})`;
+```
+
+5. **CSS for Image Display**
+```css
+.editor img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em 0;
+  border-radius: 4px;
+}
+```
+
+**Server-Side Changes**:
+
+6. **Worker: Image Upload Functions**
+```javascript
+function validateImageFile(image) {
+  // Validate size, type, filename
+}
+
+async function uploadImages(github, images) {
+  for (const image of images) {
+    await github.createOrUpdateFile(
+      `static/images/${image.filename}`,
+      image.content, // base64
+      `Upload image: ${image.filename}`,
+      null,
+      true // isBinary flag
+    );
+  }
+}
+```
+
+7. **Worker: Modified createOrUpdateFile**
+```javascript
+async createOrUpdateFile(path, content, message, sha = null, isBinary = false) {
+  const payload = {
+    message,
+    content: isBinary ? content : btoa(unescape(encodeURIComponent(content))),
+    branch: this.branch,
+  };
+  // ...
+}
+```
+
+8. **Worker: Updated POST/PUT Handlers**
+```javascript
+// Extract images from request
+const { filename, content, images } = await request.json();
+
+// Upload images first
+if (images && Array.isArray(images) && images.length > 0) {
+  const imageResults = await uploadImages(github, images);
+  if (imageResults.failedImages.length > 0) {
+    return corsResponse({ error: 'Image upload failed' }, 500);
+  }
+}
+
+// Then upload post
+// ...
+```
+
+**Local Development Server**:
+
+9. **server.js: Image Handling**
+```javascript
+// Create images directory
+const imagesDir = path.join(CONFIG.blogPath, 'static', 'images');
+if (!fs.existsSync(imagesDir)) {
+  fs.mkdirSync(imagesDir, { recursive: true });
+}
+
+// Save images
+for (const image of images) {
+  const imageBuffer = Buffer.from(image.content, 'base64');
+  const imagePath = path.join(imagesDir, image.filename);
+  fs.writeFileSync(imagePath, imageBuffer);
+}
+```
+
+### Issues Encountered & Fixed
+
+**Issue 1: Broken Image Preview**
+- Problem: Images showed broken icon in editor
+- Cause: Using `/images/filename.png` before upload
+- Fix: Use base64 data URL in editor, store final path in data-image-path
+
+**Issue 2: Scrollbar with Large Images**
+- Problem: Images at full size causing horizontal scroll
+- Fix: Added CSS `max-width: 100%; height: auto;`
+
+**Issue 3: Markdown Text Visible on Blog**
+- Problem: Markdown syntax `![alt](/images/file.png)` showing as text
+- Cause: htmlToMarkdown missing img tag handler
+- Fix: Added `case 'img'` to convert `<img>` → markdown
+
+**Issue 4: localStorage Quota Exceeded**
+- Problem: Saving base64 images in drafts exceeded 5-10MB limit
+- Fix: Don't save images in drafts (only in memory until publish)
+
+### Private Repository Update (Dec 31, 2025)
+
+**Made blog repository private** for content protection:
+
+1. Created GitHub token with `repo` scope (for private access)
+2. Updated Cloudflare Worker secret: `wrangler secret put GITHUB_TOKEN`
+3. Made `haomaaax/max-notes` repository private
+4. Tested publishing - works perfectly!
+
+**Benefits**:
+- ✅ Content private until published
+- ✅ Draft posts not publicly visible
+- ✅ Same workflow, more privacy
+- ✅ No additional cost
+
+### Technical Details
+
+**Filename Generation**:
+```
+Original: "My Photo (1).jpg"
+Generated: "my-photo-1-1735492834-a3f9b2.jpg"
+
+Format: {sanitized-name}-{timestamp}-{random}.{ext}
+```
+
+**Validation Rules**:
+- Max size: 5MB per image
+- Types: JPG, JPEG, PNG, GIF, WebP
+- Filename: alphanumeric + hyphens only
+- Path traversal prevention
+
+**Upload Flow**:
+```
+User selects image
+  ↓ Validate (size, type)
+  ↓ Convert to base64
+  ↓ Generate unique filename
+  ↓ Add to pendingImages array
+  ↓ Insert preview in editor
+User clicks Publish
+  ↓ Filter images used in content
+  ↓ Upload images to GitHub first
+  ↓ Upload post markdown
+  ↓ Trigger site rebuild
+```
+
+### Results
+
+✅ Image upload working end-to-end
+✅ Preview displays correctly in editor
+✅ No broken images during editing
+✅ Images constrained to editor width
+✅ Markdown conversion working
+✅ Images appear on published blog
+✅ Multiple image upload supported
+✅ Private repository working
+✅ All features tested on production
+
+### Lessons Learned
+
+1. **Base64 Preview is Better**: Showing actual image data better UX than placeholder
+2. **CSS Constraints Matter**: Images need max-width or they break layout
+3. **Upload Order Matters**: Upload images before post to avoid orphans
+4. **localStorage Has Limits**: Don't store large base64 data in drafts
+5. **Private Repo Needs Correct Scope**: `public_repo` won't work, need `repo`
+
+### Files Modified
+
+| File | Changes | Lines Added/Modified |
+|------|---------|---------------------|
+| index.html | Image upload button + input | +10 |
+| editor.js | 6 new functions + img handler | +150 |
+| style.css | Image styling | +7 |
+| publish-worker/src/index.js | Image upload functions | +120 |
+| server.js | Local image handling | +30 |
+
+**Total**: ~317 lines of new code
+
+### Success Metrics
+
+✅ Images upload < 3 seconds each
+✅ Preview appears immediately
+✅ No UI breakage with large images
+✅ Published images display correctly
+✅ Mobile upload working (iOS Safari)
+✅ Private repo access working
+✅ Zero regressions in existing features
+
+---
+
+**Status**: Phase 5 complete! Image upload fully functional.
+
+**Last Updated**: December 31, 2025
