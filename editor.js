@@ -1148,16 +1148,47 @@ function init() {
 
   // Handle Install Prompt
   let deferredInstallPrompt = null;
+  const installButton = document.getElementById('btn-install-app');
 
   window.addEventListener('beforeinstallprompt', (event) => {
     console.log('💡 [PWA] Install prompt available');
     event.preventDefault();
     deferredInstallPrompt = event;
+
+    // Show install button
+    if (installButton) {
+      installButton.classList.remove('hidden');
+    }
   });
+
+  // Handle install button click
+  if (installButton) {
+    installButton.addEventListener('click', async () => {
+      if (!deferredInstallPrompt) {
+        return;
+      }
+
+      // Show the install prompt
+      deferredInstallPrompt.prompt();
+
+      // Wait for the user's response
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      console.log(`[PWA] User response: ${outcome}`);
+
+      // Clear the prompt
+      deferredInstallPrompt = null;
+      installButton.classList.add('hidden');
+    });
+  }
 
   window.addEventListener('appinstalled', () => {
     console.log('✅ [PWA] App installed successfully');
     deferredInstallPrompt = null;
+
+    // Hide install button
+    if (installButton) {
+      installButton.classList.add('hidden');
+    }
   });
 
   // Online/Offline Status
