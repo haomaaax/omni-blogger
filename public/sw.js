@@ -1,7 +1,7 @@
 // Omni Blogger - Service Worker
-// Version: 1.4
+// Version: 1.5
 
-const CACHE_VERSION = 'omni-v5';
+const CACHE_VERSION = 'omni-v6';
 const CACHE_FILES = [
   '/',
   '/index.html',
@@ -9,10 +9,10 @@ const CACHE_FILES = [
   '/editor.js',
   '/config.js',
   '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-180.png',
-  '/icons/icon-32.png'
+  '/icons/icon-192.png?v=2',
+  '/icons/icon-512.png?v=2',
+  '/icons/icon-180.png?v=2',
+  '/icons/icon-32.png?v=2'
 ];
 
 // Install event - cache files
