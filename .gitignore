@@ -10,3 +10,9 @@ node_modules/
 
 # Configuration (personal settings)
 config.json
+
+# Wrangler
+.wrangler/
+
+# Build utilities
+public/icons/convert-icon.js

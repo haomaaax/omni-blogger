@@ -24,7 +24,7 @@ try {
 
 const CONFIG = {
   port: 3000,
-  editorPath: __dirname,
+  editorPath: path.join(__dirname, 'public'),
   ...userConfig
 };
 
