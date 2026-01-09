@@ -27,16 +27,16 @@
 
   <!-- Fountain pen nib from menu (scaled 12x and centered) -->
   <g transform="translate(256, 256) scale(12) translate(-12, -12)">
-    <!-- Main nib body with gold -->
-    <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" fill="url(#gold)" stroke="none"/>
+    <!-- Main nib body with gold and border -->
+    <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" fill="url(#gold)" stroke="#8B7355" stroke-width="0.4" stroke-linejoin="round"/>
 
-    <!-- Nib tip with silver accent -->
-    <path d="M12 19l7-7 3 3-7 7-3-3z" fill="url(#silver)" stroke="none"/>
+    <!-- Nib tip with silver accent and border -->
+    <path d="M12 19l7-7 3 3-7 7-3-3z" fill="url(#silver)" stroke="#7A7A7A" stroke-width="0.4" stroke-linejoin="round"/>
 
     <!-- Decorative line with dark gray -->
     <path d="M2 2l7.586 7.586" stroke="url(#darkgray)" stroke-width="0.5" fill="none"/>
 
-    <!-- White center hole -->
-    <circle cx="11" cy="11" r="2" fill="#FFFFFF"/>
+    <!-- White center hole with border -->
+    <circle cx="11" cy="11" r="2" fill="#FFFFFF" stroke="#6B6B6B" stroke-width="0.3"/>
   </g>
 </svg>
