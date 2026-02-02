@@ -24,6 +24,21 @@
 </head>
 <body>
   <div class="app">
+    <!-- Auth Splash Screen -->
+    <div id="auth-splash" class="auth-splash hidden">
+      <div class="auth-splash-content">
+        <h1>Omni Blogger</h1>
+        <p class="auth-subtitle">A timeless blog editor</p>
+        <button id="passkey-signin-button" class="passkey-signin-button">
+          🔐 Sign in with Passkey
+        </button>
+        <p class="auth-note">
+          Protected by Cloudflare Access email verification.<br>
+          Sign in with passkey for API authentication.
+        </p>
+      </div>
+    </div>
+
     <!-- Header -->
     <header class="header">
       <div class="header-left">
@@ -43,6 +58,18 @@
         </button>
       </div>
       <div class="header-right">
+        <!-- User Profile -->
+        <div id="user-profile" class="user-profile hidden">
+          <button id="user-profile-btn" class="user-profile-btn">
+            <img id="user-avatar" class="user-avatar" src="" alt="">
+            <span id="user-name" class="user-name"></span>
+          </button>
+          <div id="user-dropdown" class="user-dropdown hidden">
+            <div class="user-dropdown-email"></div>
+            <button id="btn-signout" class="menu-item">Sign out</button>
+          </div>
+        </div>
+
         <!-- Image Upload Button -->
         <label for="image-upload" class="btn-icon" title="Upload Image">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -53,6 +53,209 @@ let pendingImages = []; // Array of {id, filename, base64, alt, mimeType, size}
 let imageCounter = 0;
 
 // ============================================
+// Google Auth State
+// ============================================
+let googleUser = null;
+
+function getStoredAuth() {
+  const stored = localStorage.getItem('googleAuth');
+  return stored ? JSON.parse(stored) : null;
+}
+
+function storeAuth(user) {
+  const authData = {
+    name: user.name,
+    email: user.email,
+    picture: user.picture,
+    signedInAt: new Date().toISOString()
+  };
+  localStorage.setItem('googleAuth', JSON.stringify(authData));
+  googleUser = authData;
+}
+
+function clearAuth() {
+  localStorage.removeItem('googleAuth');
+  googleUser = null;
+}
+
+// ============================================
+// Passkey Authentication
+// ============================================
+
+const AUTH_TOKEN_KEY = 'passkeyAuthToken';
+const AUTH_USER_KEY = 'passkeyAuthUser';
+
+function getStoredPasskeyAuth() {
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  const user = localStorage.getItem(AUTH_USER_KEY);
+  if (!token || !user) return null;
+
+  // Check if token expired
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    if (payload.exp * 1000 < Date.now()) {
+      clearPasskeyAuth();
+      return null;
+    }
+    return { token, user: JSON.parse(user) };
+  } catch (e) {
+    clearPasskeyAuth();
+    return null;
+  }
+}
+
+function storePasskeyAuth(token, user) {
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
+  localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+}
+
+function clearPasskeyAuth() {
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem(AUTH_USER_KEY);
+}
+
+async function initPasskeyAuth() {
+  const stored = getStoredPasskeyAuth();
+  if (stored) {
+    googleUser = stored.user; // Reuse existing var
+    showAuthenticatedUI();
+    return;
+  }
+
+  showAuthSplash();
+
+  const signInButton = document.getElementById('passkey-signin-button');
+  if (signInButton) {
+    signInButton.addEventListener('click', handlePasskeySignIn);
+  }
+}
+
+async function handlePasskeySignIn() {
+  try {
+    showStatus('Requesting authentication...', '');
+
+    // 1. Get challenge from server
+    const challengeRes = await fetch(`${CONFIG.apiUrl}/auth/challenge`);
+    if (!challengeRes.ok) throw new Error('Failed to get challenge');
+    const { challenge } = await challengeRes.json();
+
+    // 2. Call WebAuthn API
+    const credential = await navigator.credentials.get({
+      publicKey: {
+        challenge: base64UrlToUint8Array(challenge),
+        rpId: window.location.hostname,
+        userVerification: 'preferred',
+        timeout: 60000
+      }
+    });
+
+    if (!credential) throw new Error('No credential returned');
+
+    // 3. Prepare verification payload
+    const payload = {
+      challenge,
+      clientDataJSON: arrayBufferToBase64(credential.response.clientDataJSON),
+      authenticatorData: arrayBufferToBase64(credential.response.authenticatorData),
+      signature: arrayBufferToBase64(credential.response.signature),
+      displayName: 'Max Chen'
+    };
+
+    // 4. Verify with server
+    const verifyRes = await fetch(`${CONFIG.apiUrl}/auth/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!verifyRes.ok) {
+      const error = await verifyRes.json();
+      throw new Error(error.error || 'Verification failed');
+    }
+
+    const { token, displayName } = await verifyRes.json();
+
+    // 5. Store token
+    const user = { name: displayName, signedInAt: new Date().toISOString() };
+    storePasskeyAuth(token, user);
+    googleUser = user;
+
+    showAuthenticatedUI();
+    hideAuthSplash();
+    showStatus('Signed in as ' + displayName, 'success');
+
+  } catch (error) {
+    console.error('Passkey sign-in error:', error);
+    showStatus('Sign-in failed: ' + error.message, 'error');
+  }
+}
+
+function handlePasskeySignOut() {
+  clearPasskeyAuth();
+  googleUser = null;
+  showAuthSplash();
+
+  const userProfile = document.getElementById('user-profile');
+  if (userProfile) userProfile.classList.add('hidden');
+
+  showStatus('Signed out', 'success');
+  setTimeout(() => initPasskeyAuth(), 100);
+}
+
+async function registerPasskey(displayName) {
+  try {
+    showStatus('Creating passkey...', '');
+
+    const challengeRes = await fetch(`${CONFIG.apiUrl}/auth/challenge`);
+    const { challenge } = await challengeRes.json();
+
+    const credential = await navigator.credentials.create({
+      publicKey: {
+        challenge: base64UrlToUint8Array(challenge),
+        rp: {
+          name: 'Omni Blogger',
+          id: window.location.hostname
+        },
+        user: {
+          id: Uint8Array.from('owner', c => c.charCodeAt(0)),
+          name: displayName,
+          displayName: displayName
+        },
+        pubKeyCredParams: [
+          { type: 'public-key', alg: -7 },  // ES256
+          { type: 'public-key', alg: -257 } // RS256
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform',
+          userVerification: 'preferred'
+        },
+        timeout: 60000,
+        attestation: 'none'
+      }
+    });
+
+    const publicKey = arrayBufferToBase64(credential.response.getPublicKey());
+    const credentialId = arrayBufferToBase64(credential.rawId);
+
+    alert(`Passkey created!\n\nPublic Key:\n${publicKey}\n\nCredential ID:\n${credentialId}\n\nRun:\nwrangler secret put PASSKEY_PUBLIC_KEY\nwrangler secret put PASSKEY_CREDENTIAL_ID`);
+
+    showStatus('Passkey registered! Configure Worker and sign in.', 'success');
+  } catch (error) {
+    console.error('Registration error:', error);
+    showStatus('Registration failed: ' + error.message, 'error');
+  }
+}
+
+// Helper functions
+function base64UrlToUint8Array(base64Url) {
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+}
+
+function arrayBufferToBase64(buffer) {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+}
+
+// ============================================
 // Keyboard Shortcuts
 // ============================================
 function initKeyboardShortcuts() {
@@ -362,6 +565,9 @@ function generateFrontMatter(title, htmlContent) {
   // Generate slug for URL
   const slug = generateSlug(title);
 
+  // Get author from Google auth if available
+  const author = googleUser ? googleUser.name : 'Max Chen';
+
   let frontMatter = `---
 title: "${title.replace(/"/g, '\\"')}"
 date: ${date}
@@ -369,7 +575,7 @@ draft: false
 description: "${description.replace(/"/g, '\\"')}"
 summary: "${summary.replace(/"/g, '\\"')}"
 keywords: [${keywords.map(k => `"${k}"`).join(', ')}]
-author: "Max Chen"
+author: "${author}"
 slug: "${slug}"
 tags: []
 ---
@@ -597,6 +803,14 @@ function showStatus(message, type = '') {
 // Publish Post
 // ============================================
 async function publishPost() {
+  // Check authentication
+  const auth = getStoredPasskeyAuth();
+  if (!auth) {
+    alert('Authentication required. Please sign in again.');
+    showAuthSplash();
+    return;
+  }
+
   // Check if online before attempting to publish
   if (!navigator.onLine) {
     alert('No internet connection. Your draft has been saved locally. Please connect to the internet to publish.');
@@ -656,7 +870,8 @@ async function publishPost() {
       response = await fetch(`${CONFIG.apiUrl}/posts/${currentPostSlug}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`
         },
         body: JSON.stringify(payload)
       });
@@ -665,10 +880,19 @@ async function publishPost() {
       response = await fetch(`${CONFIG.apiUrl}/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`
         },
         body: JSON.stringify(payload)
       });
+    }
+
+    // Handle 401 Unauthorized
+    if (response.status === 401) {
+      clearPasskeyAuth();
+      alert('Session expired. Please sign in again.');
+      showAuthSplash();
+      return;
     }
 
     if (!response.ok) {
@@ -876,6 +1100,14 @@ function confirmDelete(slug, title) {
 async function deletePost() {
   if (!postToDelete) return;
 
+  // Check authentication
+  const auth = getStoredPasskeyAuth();
+  if (!auth) {
+    alert('Authentication required. Please sign in again.');
+    showAuthSplash();
+    return;
+  }
+
   try {
     showStatus('Deleting post...', '');
 
@@ -890,12 +1122,21 @@ async function deletePost() {
     const deleteResponse = await fetch(`${CONFIG.apiUrl}/posts/${postToDelete}`, {
       method: 'DELETE',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${auth.token}`
       },
       body: JSON.stringify({
         sha: postData.sha
       })
     });
+
+    // Handle 401 Unauthorized
+    if (deleteResponse.status === 401) {
+      clearPasskeyAuth();
+      alert('Session expired. Please sign in again.');
+      showAuthSplash();
+      return;
+    }
 
     if (!deleteResponse.ok) {
       throw new Error('Failed to delete post');
@@ -1032,6 +1273,59 @@ function toggleTheme() {
 }
 
 // ============================================
+// UI Helper Functions
+// ============================================
+
+function showAuthSplash() {
+  const splash = document.getElementById('auth-splash');
+  if (splash) splash.classList.remove('hidden');
+}
+
+function hideAuthSplash() {
+  const splash = document.getElementById('auth-splash');
+  if (splash) splash.classList.add('hidden');
+}
+
+function showAuthenticatedUI() {
+  if (!googleUser) return;
+
+  hideAuthSplash();
+
+  const userProfile = document.getElementById('user-profile');
+  const userAvatar = document.getElementById('user-avatar');
+  const userName = document.getElementById('user-name');
+  const userDropdownEmail = document.querySelector('.user-dropdown-email');
+
+  if (userProfile && userName) {
+    // Hide avatar for passkey auth (no picture available)
+    if (userAvatar) userAvatar.style.display = 'none';
+    userName.textContent = googleUser.name;
+    userProfile.classList.remove('hidden');
+  }
+
+  if (userDropdownEmail) {
+    userDropdownEmail.textContent = googleUser.email || 'Authenticated with passkey';
+  }
+}
+
+function toggleUserDropdown() {
+  const dropdown = document.getElementById('user-dropdown');
+  if (dropdown) dropdown.classList.toggle('hidden');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const userProfile = document.getElementById('user-profile');
+  const dropdown = document.getElementById('user-dropdown');
+
+  if (userProfile && dropdown &&
+      !userProfile.contains(e.target) &&
+      !dropdown.classList.contains('hidden')) {
+    dropdown.classList.add('hidden');
+  }
+});
+
+// ============================================
 // Initialize App
 // ============================================
 function init() {
@@ -1039,6 +1333,9 @@ function init() {
   console.log('✅ Blog Editor initialized');
   console.log('📡 API URL:', CONFIG.apiUrl);
   console.log('🌐 Blog URL:', CONFIG.blogUrl);
+
+  // Initialize Passkey Authentication FIRST
+  initPasskeyAuth();
 
   initTheme();
   initKeyboardShortcuts();
@@ -1076,6 +1373,18 @@ function init() {
     console.log('Theme toggle event listener added');
   } else {
     console.error('Theme toggle button not found!');
+  }
+
+  // User profile dropdown
+  const userProfileBtn = document.getElementById('user-profile-btn');
+  if (userProfileBtn) {
+    userProfileBtn.addEventListener('click', toggleUserDropdown);
+  }
+
+  // Sign out button
+  const btnSignOut = document.getElementById('btn-signout');
+  if (btnSignOut) {
+    btnSignOut.addEventListener('click', handlePasskeySignOut);
   }
 
   // Close modal on background click
