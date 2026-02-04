@@ -1288,48 +1288,10 @@ function hideAuthSplash() {
 
 function showAuthenticatedUI() {
   if (!googleUser) return;
-
   hideAuthSplash();
-
-  const userProfile = document.getElementById('user-profile');
-  const userAvatar = document.getElementById('user-avatar');
-  const userName = document.getElementById('user-name');
-  const userDropdownEmail = document.querySelector('.user-dropdown-email');
-
-  if (userProfile && userName) {
-    // Hide avatar for passkey auth (no picture available)
-    if (userAvatar) userAvatar.style.display = 'none';
-    userName.textContent = googleUser.name;
-    userProfile.classList.remove('hidden');
-  }
-
-  if (userDropdownEmail) {
-    // Hide email section for passkey auth (cleaner UI)
-    if (googleUser.email) {
-      userDropdownEmail.textContent = googleUser.email;
-      userDropdownEmail.style.display = 'block';
-    } else {
-      userDropdownEmail.style.display = 'none';
-    }
-  }
+  // User is authenticated, editor is ready to use
+  // Sign out button is now in the left menu panel
 }
-
-function toggleUserDropdown() {
-  const dropdown = document.getElementById('user-dropdown');
-  if (dropdown) dropdown.classList.toggle('hidden');
-}
-
-// Close dropdown when clicking outside
-document.addEventListener('click', (e) => {
-  const userProfile = document.getElementById('user-profile');
-  const dropdown = document.getElementById('user-dropdown');
-
-  if (userProfile && dropdown &&
-      !userProfile.contains(e.target) &&
-      !dropdown.classList.contains('hidden')) {
-    dropdown.classList.add('hidden');
-  }
-});
 
 // ============================================
 // Initialize App
@@ -1381,13 +1343,7 @@ function init() {
     console.error('Theme toggle button not found!');
   }
 
-  // User profile dropdown
-  const userProfileBtn = document.getElementById('user-profile-btn');
-  if (userProfileBtn) {
-    userProfileBtn.addEventListener('click', toggleUserDropdown);
-  }
-
-  // Sign out button
+  // Sign out button (now in menu panel)
   const btnSignOut = document.getElementById('btn-signout');
   if (btnSignOut) {
     btnSignOut.addEventListener('click', handlePasskeySignOut);

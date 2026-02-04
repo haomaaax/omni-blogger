@@ -58,18 +58,6 @@
         </button>
       </div>
       <div class="header-right">
-        <!-- User Profile -->
-        <div id="user-profile" class="user-profile hidden">
-          <button id="user-profile-btn" class="user-profile-btn">
-            <img id="user-avatar" class="user-avatar" src="" alt="">
-            <span id="user-name" class="user-name"></span>
-          </button>
-          <div id="user-dropdown" class="user-dropdown hidden">
-            <div class="user-dropdown-email"></div>
-            <button id="btn-signout" class="menu-item">Sign out</button>
-          </div>
-        </div>
-
         <!-- Image Upload Button -->
         <label for="image-upload" class="btn-icon" title="Upload Image">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -134,6 +122,15 @@
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
           <span>Install App</span>
+        </button>
+        <div class="menu-divider"></div>
+        <button id="btn-signout" class="menu-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span>Sign Out</span>
         </button>
       </div>
     </aside>
