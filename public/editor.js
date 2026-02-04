@@ -1304,7 +1304,13 @@ function showAuthenticatedUI() {
   }
 
   if (userDropdownEmail) {
-    userDropdownEmail.textContent = googleUser.email || 'Authenticated with passkey';
+    // Hide email section for passkey auth (cleaner UI)
+    if (googleUser.email) {
+      userDropdownEmail.textContent = googleUser.email;
+      userDropdownEmail.style.display = 'block';
+    } else {
+      userDropdownEmail.style.display = 'none';
+    }
   }
 }
 

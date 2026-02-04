@@ -1330,6 +1330,13 @@ input:focus-visible {
   word-break: break-word;
 }
 
+.user-dropdown-email[style*="display: none"] {
+  display: none !important;
+  border-bottom: none;
+  padding: 0;
+  margin-bottom: 0;
+}
+
 /* Responsive: Hide name on mobile */
 @media (max-width: 768px) {
   .user-name {
