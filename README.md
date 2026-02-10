@@ -81,7 +81,9 @@ This project powers:
 
 ### For Self-Hosting (Developers)
 
-See [MANUAL.md](MANUAL.md) for complete deployment guide.
+**New to deployment?** Start with [QUICK-START.md](docs/QUICK-START.md) - deploy in under 60 minutes using automated tools.
+
+**Want full details?** See [MANUAL.md](MANUAL.md) for complete deployment guide.
 
 **What you'll deploy:**
 1. **Editor** (Cloudflare Pages) - Web UI
@@ -92,6 +94,7 @@ See [MANUAL.md](MANUAL.md) for complete deployment guide.
 
 ## 📖 Documentation
 
+- **[QUICK-START.md](docs/QUICK-START.md)** - Deploy in under 60 minutes (recommended for first-time users)
 - **[MANUAL.md](MANUAL.md)** - Complete deployment and usage guide
 - **[ROADMAP.md](ROADMAP.md)** - Implementation history and future enhancements
 - **[todo.md](todo.md)** - Deployment checklist (track your progress)

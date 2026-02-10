@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omni Blogger - Config Generator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #1C3A52;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #1C3A52;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-desc {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #1C3A52;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .button {
+            background: #1C3A52;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .button:hover {
+            background: #2a4a62;
+        }
+
+        .button-secondary {
+            background: #666;
+        }
+
+        .button-secondary:hover {
+            background: #555;
+        }
+
+        .output {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .output.show {
+            display: block;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .code-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background: #45a049;
+        }
+
+        .copy-btn.copied {
+            background: #2196F3;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .badge-optional {
+            background: #FFF3CD;
+            color: #856404;
+        }
+
+        .badge-required {
+            background: #F8D7DA;
+            color: #721C24;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛠️ Omni Blogger Config Generator</h1>
+        <p class="subtitle">Generate configuration files without manual editing</p>
+
+        <form id="configForm">
+            <!-- Section 1: Basic Info -->
+            <div class="section">
+                <h2 class="section-title">
+                    📝 Basic Information
+                    <span class="badge badge-required">Required</span>
+                </h2>
+                <p class="section-desc">Core details for your blog setup</p>
+
+                <div class="form-group">
+                    <label for="blogName">Blog Name</label>
+                    <input type="text" id="blogName" placeholder="my-blog" required>
+                    <p class="help-text">Lowercase, hyphens allowed (e.g., "sparkler" or "my-awesome-blog")</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="blogPath">Blog Path (Local)</label>
+                    <input type="text" id="blogPath" placeholder="/Users/yourname/sparkler/my-blog">
+                    <p class="help-text">Absolute path to your Hugo blog directory</p>
+                </div>
+            </div>
+
+            <!-- Section 2: Domains -->
+            <div class="section">
+                <h2 class="section-title">
+                    🌐 Domains
+                    <span class="badge badge-optional">Optional</span>
+                </h2>
+                <p class="section-desc">Configure custom domains or use free subdomains</p>
+
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="useCustomDomain" onchange="toggleCustomDomain()">
+                    <label for="useCustomDomain" style="margin-bottom: 0;">I have a custom domain</label>
+                </div>
+
+                <div id="customDomainFields" style="display: none; margin-top: 15px;">
+                    <div class="form-group">
+                        <label for="blogUrl">Blog URL</label>
+                        <input type="url" id="blogUrl" placeholder="https://yourdomain.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editorUrl">Editor URL</label>
+                        <input type="url" id="editorUrl" placeholder="https://editor.yourdomain.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="apiUrl">API URL</label>
+                        <input type="url" id="apiUrl" placeholder="https://api.yourdomain.com">
+                    </div>
+                </div>
+
+                <div id="subdomainFields">
+                    <p class="help-text">
+                        Without custom domain, you'll use free Cloudflare Pages subdomains:<br>
+                        - Blog: <strong><span id="previewBlogUrl">your-blog.pages.dev</span></strong><br>
+                        - Editor: <strong><span id="previewEditorUrl">your-blog-editor.pages.dev</span></strong><br>
+                        - API: <strong><span id="previewApiUrl">your-api.workers.dev</span></strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 3: GitHub -->
+            <div class="section">
+                <h2 class="section-title">
+                    🐙 GitHub Configuration
+                    <span class="badge badge-required">Required</span>
+                </h2>
+                <p class="section-desc">Repository and access settings</p>
+
+                <div class="form-group">
+                    <label for="githubUsername">GitHub Username</label>
+                    <input type="text" id="githubUsername" placeholder="yourusername" required>
+                    <p class="help-text">Your GitHub username (e.g., "haomaaax")</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="githubRepo">Blog Repository Name</label>
+                    <input type="text" id="githubRepo" placeholder="my-blog-content">
+                    <p class="help-text">Repository where Hugo blog content is stored</p>
+                </div>
+            </div>
+
+            <!-- Section 4: Optional Features -->
+            <div class="section">
+                <h2 class="section-title">
+                    ⚙️ Optional Features
+                    <span class="badge badge-optional">Optional</span>
+                </h2>
+
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="enableEmail">
+                    <label for="enableEmail" style="margin-bottom: 0;">Enable email subscriptions (requires Resend)</label>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="privateRepo">
+                    <label for="privateRepo" style="margin-bottom: 0;">Use private GitHub repository</label>
+                </div>
+            </div>
+
+            <button type="submit" class="button">Generate Configs</button>
+            <button type="button" class="button button-secondary" onclick="resetForm()">Reset</button>
+        </form>
+
+        <div id="output" class="output">
+            <h2 style="margin-bottom: 20px;">📄 Generated Configuration Files</h2>
+
+            <!-- config.json -->
+            <div class="code-title">
+                config.json (Local Development)
+                <button class="copy-btn" onclick="copyCode('configJson')">Copy</button>
+            </div>
+            <pre class="code-block" id="configJson"></pre>
+
+            <!-- config.js -->
+            <div class="code-title">
+                public/config.js (Web Editor)
+                <button class="copy-btn" onclick="copyCode('configJs')">Copy</button>
+            </div>
+            <pre class="code-block" id="configJs"></pre>
+
+            <!-- wrangler.toml -->
+            <div class="code-title">
+                wrangler.toml (Cloudflare Worker)
+                <button class="copy-btn" onclick="copyCode('wranglerToml')">Copy</button>
+            </div>
+            <pre class="code-block" id="wranglerToml"></pre>
+
+            <h3 style="margin: 30px 0 15px 0;">📋 Next Steps</h3>
+            <ol style="padding-left: 20px; line-height: 2;">
+                <li>Copy each config file to its respective location</li>
+                <li>Run: <code>./scripts/setup-secrets.sh</code> to configure secrets</li>
+                <li>Run: <code>wrangler deploy</code> to deploy the Worker</li>
+                <li>Register your passkey via the web interface</li>
+                <li>Start blogging!</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Update subdomain previews
+        document.getElementById('blogName').addEventListener('input', updatePreviews);
+
+        function updatePreviews() {
+            const blogName = document.getElementById('blogName').value || 'your-blog';
+            document.getElementById('previewBlogUrl').textContent = `${blogName}.pages.dev`;
+            document.getElementById('previewEditorUrl').textContent = `${blogName}-editor.pages.dev`;
+            document.getElementById('previewApiUrl').textContent = `${blogName}-api.workers.dev`;
+        }
+
+        function toggleCustomDomain() {
+            const useCustom = document.getElementById('useCustomDomain').checked;
+            document.getElementById('customDomainFields').style.display = useCustom ? 'block' : 'none';
+            document.getElementById('subdomainFields').style.display = useCustom ? 'none' : 'block';
+        }
+
+        function resetForm() {
+            document.getElementById('configForm').reset();
+            document.getElementById('output').classList.remove('show');
+            toggleCustomDomain();
+            updatePreviews();
+        }
+
+        document.getElementById('configForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const blogName = document.getElementById('blogName').value;
+            const blogPath = document.getElementById('blogPath').value || `/path/to/${blogName}`;
+            const githubUsername = document.getElementById('githubUsername').value;
+            const githubRepo = document.getElementById('githubRepo').value || `${blogName}-content`;
+            const useCustomDomain = document.getElementById('useCustomDomain').checked;
+            const privateRepo = document.getElementById('privateRepo').checked;
+
+            let blogUrl, editorUrl, apiUrl;
+
+            if (useCustomDomain) {
+                blogUrl = document.getElementById('blogUrl').value;
+                editorUrl = document.getElementById('editorUrl').value;
+                apiUrl = document.getElementById('apiUrl').value;
+            } else {
+                blogUrl = `https://${blogName}.pages.dev`;
+                editorUrl = `https://${blogName}-editor.pages.dev`;
+                apiUrl = `https://${blogName}-api.workers.dev`;
+            }
+
+            // Generate config.json
+            const configJson = {
+                blogPath: blogPath,
+                blogUrl: blogUrl,
+                apiUrl: "http://localhost:3000",
+                deployCommand: ""
+            };
+
+            document.getElementById('configJson').textContent = JSON.stringify(configJson, null, 2);
+
+            // Generate config.js
+            const configJs = `/* ============================================
+   Blog Editor - Client-Side Configuration
+   This file is loaded by the browser
+   ============================================ */
+
+const CONFIG = {
+  // Your live blog URL
+  blogUrl: '${blogUrl}',
+
+  // Cloudflare Worker API for publishing
+  apiUrl: '${apiUrl}',
+
+  // Publishing endpoint (appended to apiUrl)
+  publishEndpoint: ''
+};
+`;
+
+            document.getElementById('configJs').textContent = configJs;
+
+            // Generate wrangler.toml
+            const wranglerToml = `name = "${blogName}-publisher"
+main = "src/index.js"
+compatibility_date = "2024-12-10"
+
+# KV Namespace for storing subscribers
+[[kv_namespaces]]
+binding = "SUBSCRIBERS"
+id = "YOUR_SUBSCRIBERS_KV_ID"  # Replace after running: wrangler kv:namespace create SUBSCRIBERS
+
+# KV Namespace for authentication challenges (5-minute TTL)
+[[kv_namespaces]]
+binding = "AUTH_CHALLENGES"
+id = "YOUR_AUTH_KV_ID"  # Replace after running: wrangler kv:namespace create AUTH_CHALLENGES
+
+# Secrets (add via: wrangler secret put SECRET_NAME)
+# GITHUB_TOKEN - GitHub Personal Access Token (with ${privateRepo ? 'repo' : 'public_repo'} scope)
+# RESEND_API_KEY - Resend API key for sending emails (optional)
+# JWT_SECRET - Secret for signing JWTs (generate with: openssl rand -base64 32)
+# PASSKEY_PUBLIC_KEY - WebAuthn credential public key (set during registration)
+# PASSKEY_CREDENTIAL_ID - WebAuthn credential ID (set during registration)
+`;
+
+            document.getElementById('wranglerToml').textContent = wranglerToml;
+
+            // Show output
+            document.getElementById('output').classList.add('show');
+            document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        function copyCode(elementId) {
+            const code = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
