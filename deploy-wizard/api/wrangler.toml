@@ -1,0 +1,9 @@
+name = "omni-blogger-deploy-api"
+main = "index.js"
+compatibility_date = "2024-12-10"
+
+# This Worker handles deployment orchestration for the wizard
+# It creates GitHub repos, Cloudflare Workers, KV namespaces, and Pages projects
+
+# No secrets or KV needed for this worker
+# It uses tokens provided by the user during wizard flow

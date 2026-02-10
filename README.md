@@ -81,9 +81,17 @@ This project powers:
 
 ### For Self-Hosting (Developers)
 
-**New to deployment?** Start with [QUICK-START.md](docs/QUICK-START.md) - deploy in under 60 minutes using automated tools.
+**🎯 Easiest: One-Click Deploy** (10-15 minutes)
+- Use the [Deploy Wizard](deploy-wizard/index.html) - browser-based, no CLI required
+- Automated OAuth flows for Cloudflare and GitHub
+- Real-time progress tracking
 
-**Want full details?** See [MANUAL.md](MANUAL.md) for complete deployment guide.
+**⚡ Quick Start** (60 minutes)
+- Follow [QUICK-START.md](docs/QUICK-START.md) with automated scripts
+- Pre-flight validation and secret generation
+
+**📚 Full Manual** (for advanced users)
+- See [MANUAL.md](MANUAL.md) for complete deployment guide
 
 **What you'll deploy:**
 1. **Editor** (Cloudflare Pages) - Web UI

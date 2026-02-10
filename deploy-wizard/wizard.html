@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deploy Omni Blogger - Setup Wizard</title>
+    <link rel="stylesheet" href="css/wizard.css">
+</head>
+<body>
+    <div class="wizard-container">
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+            <div class="progress-step active" data-step="1">
+                <div class="step-circle">1</div>
+                <div class="step-label">Blog Name</div>
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step" data-step="2">
+                <div class="step-circle">2</div>
+                <div class="step-label">Cloudflare</div>
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step" data-step="3">
+                <div class="step-circle">3</div>
+                <div class="step-label">GitHub</div>
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step" data-step="4">
+                <div class="step-circle">4</div>
+                <div class="step-label">Options</div>
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step" data-step="5">
+                <div class="step-circle">5</div>
+                <div class="step-label">Deploy</div>
+            </div>
+        </div>
+
+        <!-- Step 1: Blog Name -->
+        <div class="wizard-step active" id="step-1">
+            <h2>Choose Your Blog Name</h2>
+            <p class="step-description">This will be used for your subdomains and repository names.</p>
+
+            <div class="form-group">
+                <label for="blogName">Blog Name</label>
+                <input type="text" id="blogName" placeholder="my-blog" required pattern="[a-z0-9-]+">
+                <p class="help-text">Lowercase letters, numbers, and hyphens only</p>
+            </div>
+
+            <div class="preview-box">
+                <h3>Your URLs will be:</h3>
+                <div class="url-preview">
+                    <div class="url-item">
+                        <span class="url-label">Editor:</span>
+                        <span class="url-value" id="previewEditorUrl">my-blog-editor.pages.dev</span>
+                    </div>
+                    <div class="url-item">
+                        <span class="url-label">Blog:</span>
+                        <span class="url-value" id="previewBlogUrl">my-blog.pages.dev</span>
+                    </div>
+                    <div class="url-item">
+                        <span class="url-label">API:</span>
+                        <span class="url-value" id="previewApiUrl">my-blog-api.workers.dev</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-actions">
+                <button class="btn btn-secondary" onclick="window.location.href='index.html'">Back</button>
+                <button class="btn btn-primary" onclick="nextStep()">Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Cloudflare Authentication -->
+        <div class="wizard-step" id="step-2">
+            <h2>Connect to Cloudflare</h2>
+            <p class="step-description">We'll deploy your blog infrastructure on Cloudflare's free tier.</p>
+
+            <div class="auth-status" id="cloudflareStatus">
+                <div class="status-icon">🔗</div>
+                <p>Click below to authenticate with Cloudflare</p>
+            </div>
+
+            <div class="info-box">
+                <h4>What This Does:</h4>
+                <ul>
+                    <li>Creates Cloudflare Worker for your publishing API</li>
+                    <li>Sets up two KV namespaces (subscribers & auth)</li>
+                    <li>Deploys editor and blog to Cloudflare Pages</li>
+                    <li>All within Cloudflare's generous free tier</li>
+                </ul>
+            </div>
+
+            <button class="btn btn-large btn-cloudflare" onclick="authenticateCloudflare()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14.8 10.93c-.06-.36-.1-.73-.1-1.1 0-3.87 3.13-7 7-7h.7c.46 0 .84.37.84.83v6.74c0 .46-.38.84-.84.84h-.7c-2.71 0-4.98 1.89-5.57 4.42-.26 1.13-.93 2.09-1.85 2.74-.46.32-1.06.51-1.7.51H6.42c-.48 0-.87-.39-.87-.87v-.02c0-.43.32-.79.74-.84 1.29-.17 2.28-1.28 2.28-2.63 0-.57-.18-1.1-.48-1.53-.22-.32-.28-.73-.15-1.1.13-.36.42-.66.79-.76 1.04-.31 1.79-1.27 1.79-2.4 0-.24-.04-.47-.1-.7-.12-.44.02-.91.36-1.21.34-.3.82-.39 1.26-.22.84.33 1.57.88 2.1 1.6.14.18.23.4.23.64 0 .24-.09.46-.23.64-.53.72-1.26 1.27-2.1 1.6-.44.17-.92.08-1.26-.22-.34-.3-.48-.77-.36-1.21.06-.23.1-.46.1-.7 0-1.13-.75-2.09-1.79-2.4-.37-.1-.66-.4-.79-.76-.13-.37-.07-.78.15-1.1.3-.43.48-.96.48-1.53 0-1.35-.99-2.46-2.28-2.63-.42-.05-.74-.41-.74-.84v-.02c0-.48.39-.87.87-.87h6.16c.64 0 1.24.19 1.7.51.92.65 1.59 1.61 1.85 2.74.59 2.53 2.86 4.42 5.57 4.42h.7c.46 0 .84.38.84.84v6.74c0 .46-.38.83-.84.83h-.7c-3.87 0-7-3.13-7-7 0-.37.04-.74.1-1.1z"/>
+                </svg>
+                Connect Cloudflare Account
+            </button>
+
+            <p class="help-text">Don't have a Cloudflare account? <a href="https://dash.cloudflare.com/sign-up" target="_blank">Create one for free</a></p>
+
+            <div class="wizard-actions">
+                <button class="btn btn-secondary" onclick="previousStep()">Back</button>
+                <button class="btn btn-primary" id="cloudflareNextBtn" onclick="nextStep()" disabled>Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 3: GitHub Authentication -->
+        <div class="wizard-step" id="step-3">
+            <h2>Connect to GitHub</h2>
+            <p class="step-description">We'll create repositories to store your blog content and code.</p>
+
+            <div class="auth-status" id="githubStatus">
+                <div class="status-icon">🔗</div>
+                <p>Click below to authenticate with GitHub</p>
+            </div>
+
+            <div class="info-box">
+                <h4>What This Creates:</h4>
+                <ul>
+                    <li><strong>omni-blogger-editor</strong> - Editor app code (public or private)</li>
+                    <li><strong>omni-blogger-worker</strong> - Publishing API code (public or private)</li>
+                    <li><strong><span id="blogRepoName">my-blog</span></strong> - Your blog content (private)</li>
+                </ul>
+                <p class="note">All repositories will be created in your GitHub account and you'll have full control.</p>
+            </div>
+
+            <button class="btn btn-large btn-github" onclick="authenticateGitHub()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+                </svg>
+                Connect GitHub Account
+            </button>
+
+            <p class="help-text">Don't have a GitHub account? <a href="https://github.com/signup" target="_blank">Create one for free</a></p>
+
+            <div class="wizard-actions">
+                <button class="btn btn-secondary" onclick="previousStep()">Back</button>
+                <button class="btn btn-primary" id="githubNextBtn" onclick="nextStep()" disabled>Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Configuration Options -->
+        <div class="wizard-step" id="step-4">
+            <h2>Configure Options</h2>
+            <p class="step-description">Optional settings you can configure now or later.</p>
+
+            <div class="option-section">
+                <div class="option-header">
+                    <h3>Custom Domain</h3>
+                    <label class="toggle">
+                        <input type="checkbox" id="useCustomDomain" onchange="toggleCustomDomain()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <p class="option-description">Use your own domain instead of *.pages.dev subdomains</p>
+
+                <div id="customDomainFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="customDomain">Domain Name</label>
+                        <input type="text" id="customDomain" placeholder="yourdomain.com">
+                        <p class="help-text">You'll need to update DNS settings after deployment</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="option-section">
+                <div class="option-header">
+                    <h3>Email Subscriptions</h3>
+                    <label class="toggle">
+                        <input type="checkbox" id="enableEmail" onchange="toggleEmail()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <p class="option-description">Allow readers to subscribe and receive new post notifications</p>
+
+                <div id="emailFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="resendApiKey">Resend API Key</label>
+                        <input type="password" id="resendApiKey" placeholder="re_...">
+                        <p class="help-text">Get your API key from <a href="https://resend.com/api-keys" target="_blank">resend.com/api-keys</a></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="fromEmail">From Email</label>
+                        <input type="email" id="fromEmail" placeholder="blog@yourdomain.com">
+                        <p class="help-text">Email address readers will see</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="option-section">
+                <div class="option-header">
+                    <h3>Repository Visibility</h3>
+                </div>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="repoVisibility" value="public" checked>
+                        <span>Public - Anyone can see the code</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="repoVisibility" value="private">
+                        <span>Private - Only you can access (content repo is always private)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="wizard-actions">
+                <button class="btn btn-secondary" onclick="previousStep()">Back</button>
+                <button class="btn btn-primary" onclick="nextStep()">Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 5: Review & Deploy -->
+        <div class="wizard-step" id="step-5">
+            <h2>Review & Deploy</h2>
+            <p class="step-description">Check everything and start deployment.</p>
+
+            <div class="review-section">
+                <h3>Configuration Summary</h3>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-label">Blog Name:</span>
+                        <span class="summary-value" id="reviewBlogName">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Editor URL:</span>
+                        <span class="summary-value" id="reviewEditorUrl">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Blog URL:</span>
+                        <span class="summary-value" id="reviewBlogUrl">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">API URL:</span>
+                        <span class="summary-value" id="reviewApiUrl">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Cloudflare:</span>
+                        <span class="summary-value status-connected">✓ Connected</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">GitHub:</span>
+                        <span class="summary-value status-connected">✓ Connected</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Custom Domain:</span>
+                        <span class="summary-value" id="reviewCustomDomain">Not configured</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Email Subscriptions:</span>
+                        <span class="summary-value" id="reviewEmail">Not configured</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box warning">
+                <h4>⏱️ Deployment Time: 10-15 minutes</h4>
+                <p>The wizard will:</p>
+                <ul>
+                    <li>Create 3 GitHub repositories</li>
+                    <li>Deploy Cloudflare Worker with KV namespaces</li>
+                    <li>Deploy editor to Cloudflare Pages</li>
+                    <li>Deploy blog to Cloudflare Pages</li>
+                    <li>Configure all secrets and environment variables</li>
+                </ul>
+                <p><strong>Keep this tab open during deployment.</strong></p>
+            </div>
+
+            <div class="wizard-actions">
+                <button class="btn btn-secondary" onclick="previousStep()">Back</button>
+                <button class="btn btn-primary btn-deploy" onclick="startDeployment()">
+                    🚀 Start Deployment
+                </button>
+            </div>
+        </div>
+
+        <!-- Deployment Progress (shown after deployment starts) -->
+        <div class="wizard-step" id="step-deployment" style="display: none;">
+            <h2>Deploying Your Blog</h2>
+            <p class="step-description">Please wait while we set up your blog infrastructure...</p>
+
+            <div class="deployment-progress">
+                <div class="progress-item" id="progress-repos">
+                    <div class="progress-icon">⏳</div>
+                    <div class="progress-content">
+                        <h4>Creating GitHub Repositories</h4>
+                        <p class="progress-status">Waiting...</p>
+                    </div>
+                </div>
+
+                <div class="progress-item" id="progress-worker">
+                    <div class="progress-icon">⏳</div>
+                    <div class="progress-content">
+                        <h4>Deploying Cloudflare Worker</h4>
+                        <p class="progress-status">Waiting...</p>
+                    </div>
+                </div>
+
+                <div class="progress-item" id="progress-kv">
+                    <div class="progress-icon">⏳</div>
+                    <div class="progress-content">
+                        <h4>Creating KV Namespaces</h4>
+                        <p class="progress-status">Waiting...</p>
+                    </div>
+                </div>
+
+                <div class="progress-item" id="progress-editor">
+                    <div class="progress-icon">⏳</div>
+                    <div class="progress-content">
+                        <h4>Deploying Editor</h4>
+                        <p class="progress-status">Waiting...</p>
+                    </div>
+                </div>
+
+                <div class="progress-item" id="progress-blog">
+                    <div class="progress-icon">⏳</div>
+                    <div class="progress-content">
+                        <h4>Deploying Blog</h4>
+                        <p class="progress-status">Waiting...</p>
+                    </div>
+                </div>
+
+                <div class="progress-item" id="progress-secrets">
+                    <div class="progress-icon">⏳</div>
+                    <div class="progress-content">
+                        <h4>Configuring Secrets</h4>
+                        <p class="progress-status">Waiting...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="deploymentComplete" style="display: none;">
+                <div class="success-box">
+                    <div class="success-icon">🎉</div>
+                    <h3>Deployment Complete!</h3>
+                    <p>Your blog is now live. Here are your URLs:</p>
+
+                    <div class="result-urls">
+                        <div class="result-url">
+                            <span class="result-label">Editor:</span>
+                            <a href="#" id="resultEditorUrl" target="_blank">-</a>
+                        </div>
+                        <div class="result-url">
+                            <span class="result-label">Blog:</span>
+                            <a href="#" id="resultBlogUrl" target="_blank">-</a>
+                        </div>
+                    </div>
+
+                    <h4>Next Steps:</h4>
+                    <ol class="next-steps">
+                        <li>Visit your editor URL and register your passkey (Touch ID / Face ID)</li>
+                        <li>Write your first post</li>
+                        <li>Click "Publish" and wait ~2 minutes</li>
+                        <li>Check your blog URL - your post is live!</li>
+                    </ol>
+
+                    <button class="btn btn-primary btn-large" onclick="window.open(document.getElementById('resultEditorUrl').href, '_blank')">
+                        Open Editor
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/wizard.js"></script>
+</body>
+</html>
