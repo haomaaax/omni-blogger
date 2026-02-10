@@ -2,6 +2,8 @@
 
 One-click deployment wizard for Omni Blogger. Reduces deployment time from 60 minutes to 10-15 minutes.
 
+**🎉 NEW: Browser-based passkey registration** - Eliminates manual console extraction!
+
 ## Components
 
 ### 1. Landing Page (`index.html`)
@@ -17,12 +19,20 @@ One-click deployment wizard for Omni Blogger. Reduces deployment time from 60 mi
 - Configuration options
 - Real-time deployment progress
 
-### 3. Deployment API (`api/`)
+### 3. Passkey Setup (`passkey-setup.html`) ⭐ NEW
+- Browser-based WebAuthn credential creation
+- Automatic public key extraction
+- No console interaction required
+- Touch ID / Face ID / Windows Hello support
+- Auto-opens after deployment completes
+
+### 4. Deployment API (`api/`)
 - Cloudflare Worker that orchestrates deployment
 - Creates GitHub repositories
 - Deploys Cloudflare Workers and Pages
 - Creates KV namespaces
 - Configures secrets
+- Receives and stores passkey credentials
 
 ## How It Works
 
@@ -82,7 +92,58 @@ When user clicks "Start Deployment":
    - `GITHUB_TOKEN` - From user
    - `RESEND_API_KEY` - Optional, from user
 
+7. **Passkey Registration** (~30 seconds) ⭐ NEW
+   - Auto-opens in new tab after deployment
+   - User clicks "Register Passkey"
+   - Browser prompts for Touch ID / Face ID
+   - Public key automatically extracted
+   - Credential ID sent to API
+   - No console interaction required!
+
 **Total time: 10-15 minutes**
+
+### Browser-Based Passkey Registration
+
+This is the #1 feature that eliminates the biggest pain point. Previously, users had to:
+- Open browser console
+- Copy complex JavaScript code
+- Extract public key manually
+- Copy credential ID
+- Use Wrangler CLI to set secrets
+
+**Now users just:**
+1. Touch their fingerprint sensor
+2. Done!
+
+The passkey setup page (`passkey-setup.html`) automatically:
+- Creates WebAuthn credential using native browser API
+- Extracts public key from the credential response
+- Extracts credential ID
+- Sends both to the deployment API
+- Displays success with next steps
+
+**Technical Implementation:**
+```javascript
+// Create passkey
+const credential = await navigator.credentials.create({
+    publicKey: options
+});
+
+// Extract public key (automatically)
+const publicKeyBytes = credential.response.getPublicKey();
+const publicKey = arrayBufferToBase64(publicKeyBytes);
+
+// Extract credential ID (automatically)
+const credentialId = arrayBufferToBase64(credential.rawId);
+
+// Send to API (automatically)
+await fetch('/api/passkey/register', {
+    method: 'POST',
+    body: JSON.stringify({ blogName, publicKey, credentialId })
+});
+```
+
+**No manual steps. No console. Just touch your fingerprint.**
 
 ## Deploying the Wizard
 

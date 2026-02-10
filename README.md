@@ -81,9 +81,10 @@ This project powers:
 
 ### For Self-Hosting (Developers)
 
-**🎯 Easiest: One-Click Deploy** (10-15 minutes)
+**🎯 Easiest: One-Click Deploy** (10-15 minutes) ⭐ RECOMMENDED
 - Use the [Deploy Wizard](deploy-wizard/index.html) - browser-based, no CLI required
 - Automated OAuth flows for Cloudflare and GitHub
+- **Browser-based passkey registration** - just touch your fingerprint, no console extraction!
 - Real-time progress tracking
 
 **⚡ Quick Start** (60 minutes)

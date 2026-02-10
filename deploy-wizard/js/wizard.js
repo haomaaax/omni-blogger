@@ -502,6 +502,7 @@ function showDeploymentSuccess() {
     const config = wizardState.config;
     const editorUrl = `https://${config.blogName}-editor.pages.dev`;
     const blogUrl = `https://${config.blogName}.pages.dev`;
+    const apiUrl = `https://${config.blogName}-api.workers.dev`;
 
     document.getElementById('resultEditorUrl').href = editorUrl;
     document.getElementById('resultEditorUrl').textContent = editorUrl;
@@ -509,6 +510,36 @@ function showDeploymentSuccess() {
     document.getElementById('resultBlogUrl').textContent = blogUrl;
 
     document.getElementById('deploymentComplete').style.display = 'block';
+
+    // Auto-open passkey setup after 2 seconds
+    setTimeout(() => {
+        openPasskeySetup(editorUrl, blogUrl, apiUrl, config.blogName);
+    }, 2000);
+}
+
+function openPasskeySetup(editorUrl, blogUrl, apiUrl, blogName) {
+    // Build passkey setup URL with parameters
+    const passkeyUrl = new URL('passkey-setup.html', window.location.origin);
+    passkeyUrl.searchParams.set('editorUrl', editorUrl);
+    passkeyUrl.searchParams.set('blogUrl', blogUrl);
+    passkeyUrl.searchParams.set('apiUrl', apiUrl);
+    passkeyUrl.searchParams.set('blogName', blogName);
+
+    // Open in new tab
+    window.open(passkeyUrl.toString(), '_blank');
+
+    // Also add a manual button
+    const openButton = document.querySelector('.btn-primary.btn-large');
+    if (openButton) {
+        const passkeyButton = document.createElement('button');
+        passkeyButton.className = 'btn btn-secondary btn-large';
+        passkeyButton.textContent = '🔐 Setup Passkey';
+        passkeyButton.style.marginTop = '15px';
+        passkeyButton.onclick = () => {
+            window.open(passkeyUrl.toString(), '_blank');
+        };
+        openButton.parentNode.insertBefore(passkeyButton, openButton.nextSibling);
+    }
 }
 
 function showDeploymentError(message) {

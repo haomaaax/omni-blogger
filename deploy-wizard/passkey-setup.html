@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Your Passkey - Omni Blogger</title>
+    <link rel="stylesheet" href="css/passkey-setup.css">
+</head>
+<body>
+    <div class="container">
+        <div class="setup-card">
+            <div class="header">
+                <h1>🔐 Register Your Passkey</h1>
+                <p class="subtitle">Secure your blog with Touch ID, Face ID, or Windows Hello</p>
+            </div>
+
+            <!-- Step 1: Introduction -->
+            <div class="step active" id="step-intro">
+                <div class="info-section">
+                    <h2>No Passwords. Just Your Fingerprint.</h2>
+                    <p>Passkeys are the future of authentication. They're:</p>
+                    <ul>
+                        <li>✅ <strong>More Secure</strong> - No passwords to steal or phish</li>
+                        <li>✅ <strong>More Convenient</strong> - Just touch your fingerprint sensor</li>
+                        <li>✅ <strong>More Private</strong> - Your private key never leaves your device</li>
+                    </ul>
+
+                    <div class="device-support">
+                        <h3>Supported Devices</h3>
+                        <div class="devices-grid">
+                            <div class="device-item">
+                                <div class="device-icon">💻</div>
+                                <p>Mac with Touch ID</p>
+                            </div>
+                            <div class="device-item">
+                                <div class="device-icon">📱</div>
+                                <p>iPhone with Face ID</p>
+                            </div>
+                            <div class="device-item">
+                                <div class="device-icon">🖥️</div>
+                                <p>Windows Hello</p>
+                            </div>
+                            <div class="device-item">
+                                <div class="device-icon">🤖</div>
+                                <p>Android Fingerprint</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-large" onclick="startPasskeyRegistration()">
+                    Register Passkey
+                </button>
+
+                <p class="help-text">This will take less than 10 seconds</p>
+            </div>
+
+            <!-- Step 2: Registration In Progress -->
+            <div class="step" id="step-registering">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <h2>Authenticating...</h2>
+                    <p>Please use your fingerprint or face to continue</p>
+                    <div class="auth-instruction">
+                        <img id="authInstructionImg" src="" alt="Authentication instruction" style="display: none;">
+                        <p id="authInstructionText">Follow your device's prompt</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Success -->
+            <div class="step" id="step-success">
+                <div class="success-state">
+                    <div class="success-icon">🎉</div>
+                    <h2>Passkey Registered Successfully!</h2>
+                    <p>Your blog is now secured with your biometric authentication.</p>
+
+                    <div class="success-details">
+                        <h3>What Just Happened?</h3>
+                        <ol>
+                            <li>Your device created a cryptographic key pair</li>
+                            <li>The public key was sent to your Cloudflare Worker</li>
+                            <li>The private key stays on your device (never sent anywhere)</li>
+                            <li>Only you can authenticate with your fingerprint/face</li>
+                        </ol>
+                    </div>
+
+                    <div class="next-actions">
+                        <h3>Next Steps</h3>
+                        <div class="action-cards">
+                            <div class="action-card">
+                                <div class="action-number">1</div>
+                                <div class="action-content">
+                                    <h4>Visit Your Editor</h4>
+                                    <p>Start writing your first post</p>
+                                    <a href="#" id="editorLink" class="btn btn-secondary" target="_blank">Open Editor</a>
+                                </div>
+                            </div>
+                            <div class="action-card">
+                                <div class="action-number">2</div>
+                                <div class="action-content">
+                                    <h4>Check Your Blog</h4>
+                                    <p>See your live site</p>
+                                    <a href="#" id="blogLink" class="btn btn-secondary" target="_blank">Open Blog</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="install-pwa">
+                        <h3>💡 Tip: Install as App</h3>
+                        <p>Add your editor to your home screen for quick access:</p>
+                        <ul>
+                            <li><strong>iPhone:</strong> Share → Add to Home Screen</li>
+                            <li><strong>Android:</strong> Menu → Install app</li>
+                            <li><strong>Desktop:</strong> Install icon in address bar</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Error -->
+            <div class="step" id="step-error">
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h2>Registration Failed</h2>
+                    <p id="errorMessage">Something went wrong. Please try again.</p>
+
+                    <div class="error-details">
+                        <h3>Common Issues:</h3>
+                        <ul>
+                            <li><strong>Browser not supported:</strong> Use Chrome, Safari, or Edge</li>
+                            <li><strong>No biometric hardware:</strong> Use a device with Touch ID, Face ID, or Windows Hello</li>
+                            <li><strong>Permission denied:</strong> Allow biometric access when prompted</li>
+                            <li><strong>Network error:</strong> Check your internet connection</li>
+                        </ul>
+                    </div>
+
+                    <div class="error-actions">
+                        <button class="btn btn-primary" onclick="startPasskeyRegistration()">
+                            Try Again
+                        </button>
+                        <button class="btn btn-secondary" onclick="showManualSetup()">
+                            Manual Setup
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Setup Instructions -->
+            <div class="step" id="step-manual">
+                <div class="manual-setup">
+                    <h2>Manual Passkey Setup</h2>
+                    <p>If automatic registration didn't work, follow these steps:</p>
+
+                    <div class="manual-steps">
+                        <div class="manual-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>Visit Your Editor</h3>
+                                <p>Go to your editor URL: <code id="manualEditorUrl">-</code></p>
+                            </div>
+                        </div>
+                        <div class="manual-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>Open Browser Console</h3>
+                                <p>Press <kbd>F12</kbd> or <kbd>Cmd+Opt+J</kbd> (Mac)</p>
+                            </div>
+                        </div>
+                        <div class="manual-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>Follow On-Screen Instructions</h3>
+                                <p>The editor will guide you through passkey registration</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-secondary" onclick="backToIntro()">
+                        Back
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debug Info (hidden by default) -->
+        <div id="debugInfo" style="display: none;">
+            <h3>Debug Information</h3>
+            <pre id="debugOutput"></pre>
+        </div>
+    </div>
+
+    <script src="js/passkey-setup.js"></script>
+</body>
+</html>
