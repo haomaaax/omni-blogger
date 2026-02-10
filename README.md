@@ -20,7 +20,7 @@ This is a **timeless blog** that focuses on pure writing, not SEO optimization. 
 - **Email Subscriptions** - Readers can subscribe and get notified of new posts
 - **Classic Aesthetic** - Ink-on-paper color palette, typewriter feel
 - **Dark Mode** - Toggle in menu (sun/moon icons)
-- **Secure** - Protected with Cloudflare Access authentication
+- **Secure** - Protected with WebAuthn passkey authentication (Touch ID, Face ID)
 - **Serverless** - No local server needed, fully cloud-based
 - **Private Repository** - Blog content stored in private GitHub repo
 - **Data Ownership** - Own your subscribers, logic, and content
@@ -39,7 +39,7 @@ This project powers:
 │  (Cloudflare Pages)                     │
 │  - Minimalist WYSIWYG Editor            │
 │  - Auto-save drafts                     │
-│  - Protected by Cloudflare Access       │
+│  - Protected by Passkey Auth            │
 └─────────────┬───────────────────────────┘
               │ Click "Publish"
               ▼
@@ -71,7 +71,7 @@ This project powers:
 ### For Using the Editor (End Users)
 
 1. Visit **https://editor.sparkler.club**
-2. Login with email OTP
+2. Login with passkey (Touch ID, Face ID, or Windows Hello)
 3. Write your post (just title and content - nothing else!)
 4. Click "✨ Publish"
 5. Wait ~2 minutes
@@ -128,7 +128,7 @@ Use `config.json` (gitignored):
 ### Web Editor (Production)
 ```
 Visit editor.sparkler.club
-  ↓ Login with email
+  ↓ Login with passkey (Touch ID/Face ID)
   ↓ Write: "What's on your mind?"
   ↓ Just title + content (no tags, no toolbar)
   ↓ Auto-saves every 2 seconds
@@ -160,7 +160,7 @@ Run: node server.js
 **Backend:**
 - Cloudflare Workers (serverless API)
 - Cloudflare Pages (hosting)
-- Cloudflare Access (authentication)
+- WebAuthn (passkey authentication)
 
 **Deployment:**
 - Hugo (static site generator)
@@ -172,10 +172,12 @@ Run: node server.js
 
 ## 🔐 Security
 
-- **Authentication**: Cloudflare Access with email OTP
+- **Authentication**: WebAuthn passkey with Touch ID/Face ID/Windows Hello
+- **Session Management**: JWT tokens with 7-day expiration
 - **Authorization**: GitHub Personal Access Token (stored as Worker secret)
-- **CORS**: Configured in Worker for cross-origin requests
+- **CORS**: Configured in Worker for cross-origin requests with proper Authorization header support
 - **HTTPS**: Enforced on all domains
+- **No Passwords**: Passkeys stored in device secure enclave
 
 ## 🎨 Design Philosophy
 
@@ -203,7 +205,7 @@ Run: node server.js
 | Edit Published Posts | ✅ | Load, edit, update existing posts |
 | Delete Posts | ✅ | With confirmation dialog |
 | Email Subscriptions | ✅ | Double opt-in, auto-notify on new posts |
-| Authentication | ✅ | Cloudflare Access (email OTP) |
+| Passkey Authentication | ✅ | Touch ID, Face ID, Windows Hello |
 | Mobile Support | ✅ | Works on iPhone, iPad |
 | Dark Mode | ✅ | Toggle in menu |
 | Classic Aesthetic | ✅ | Ink-on-paper, typewriter feel |
@@ -236,8 +238,8 @@ Readers can subscribe to your blog and receive email notifications when you publ
 
 The blog is production-ready as-is. These are optional:
 
-- [ ] Google/GitHub login (easier than email OTP)
-- [ ] PWA features ("Add to Home Screen")
+- [x] ~~Google/GitHub login~~ → Passkey authentication implemented! ✅
+- [x] ~~PWA features~~ → Progressive Web App complete! ✅
 - [ ] Drag & drop image upload
 - [ ] Image optimization/resizing
 - [ ] Post scheduling
@@ -253,7 +255,7 @@ The blog is production-ready as-is. These are optional:
 | Cloudflare Pages (editor) | Free | $0 |
 | Cloudflare Pages (blog) | Free | $0 |
 | Cloudflare Workers | Free (100k req/day) | $0 |
-| Cloudflare Access | Free (50 users) | $0 |
+| Cloudflare KV (auth) | Free | $0 |
 | Domain (Gandi) | Paid | ~$1.25/month |
 | **Total** | | **~$1.25/month** |
 
