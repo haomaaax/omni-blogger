@@ -1,0 +1,266 @@
+name: Automated Omni Blogger Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      blog_name:
+        description: 'Blog name (e.g., my-blog)'
+        required: true
+        type: string
+      cloudflare_account_id:
+        description: 'Cloudflare Account ID'
+        required: true
+        type: string
+      github_username:
+        description: 'GitHub Username'
+        required: true
+        type: string
+      custom_domain:
+        description: 'Custom domain (optional)'
+        required: false
+        type: string
+      enable_email:
+        description: 'Enable email subscriptions'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    name: Deploy Omni Blogger
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout deployment code
+        uses: actions/checkout@v4
+        with:
+          repository: haomaaax/omni-blogger
+          path: omni-blogger
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Wrangler CLI
+        run: npm install -g wrangler@latest
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: 'latest'
+          extended: true
+
+      - name: Create GitHub Repositories
+        env:
+          GITHUB_TOKEN: ${{ secrets.USER_GITHUB_TOKEN }}
+        run: |
+          echo "Creating repositories for ${{ inputs.github_username }}..."
+
+          # Create editor repository
+          gh repo create omni-blogger-editor \
+            --public \
+            --description "Minimalist web-based blog editor" \
+            --clone
+
+          # Create worker repository
+          gh repo create omni-blogger-worker \
+            --public \
+            --description "Publishing API for Omni Blogger" \
+            --clone
+
+          # Create blog content repository (always private)
+          gh repo create ${{ inputs.blog_name }} \
+            --private \
+            --description "Hugo blog content" \
+            --clone
+
+          echo "✓ Repositories created"
+
+      - name: Initialize Editor Repository
+        run: |
+          cd omni-blogger-editor
+          cp -r ../omni-blogger/public/* .
+
+          # Create config.js
+          cat > config.js << 'EOF'
+          const CONFIG = {
+            blogUrl: 'https://${{ inputs.blog_name }}.pages.dev',
+            apiUrl: 'https://${{ inputs.blog_name }}-api.workers.dev',
+            publishEndpoint: ''
+          };
+          EOF
+
+          git add .
+          git commit -m "Initial commit - Omni Blogger editor"
+          git push origin main
+          echo "✓ Editor repository initialized"
+
+      - name: Initialize Worker Repository
+        run: |
+          cd omni-blogger-worker
+          cp -r ../omni-blogger/publish-worker/* .
+
+          # Update wrangler.toml with blog name
+          sed -i 's/name = ".*"/name = "${{ inputs.blog_name }}-publisher"/' wrangler.toml
+
+          git add .
+          git commit -m "Initial commit - Publishing API"
+          git push origin main
+          echo "✓ Worker repository initialized"
+
+      - name: Initialize Blog Repository
+        run: |
+          cd ${{ inputs.blog_name }}
+
+          # Create basic Hugo site
+          hugo new site . --force
+
+          # Add example post
+          mkdir -p content/posts
+          cat > content/posts/welcome.md << 'EOF'
+          ---
+          title: "Welcome to My Blog"
+          date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          ---
+
+          This is your first post! Start writing from your editor.
+          EOF
+
+          git add .
+          git commit -m "Initial commit - Blog content"
+          git push origin main
+          echo "✓ Blog repository initialized"
+
+      - name: Deploy Cloudflare Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.USER_CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ inputs.cloudflare_account_id }}
+        run: |
+          cd omni-blogger-worker
+
+          # Deploy worker
+          wrangler deploy
+
+          echo "✓ Worker deployed to https://${{ inputs.blog_name }}-api.workers.dev"
+
+      - name: Create KV Namespaces
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.USER_CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ inputs.cloudflare_account_id }}
+        run: |
+          cd omni-blogger-worker
+
+          # Create SUBSCRIBERS namespace
+          SUBSCRIBERS_ID=$(wrangler kv:namespace create SUBSCRIBERS --json | jq -r '.id')
+          echo "SUBSCRIBERS_KV_ID=$SUBSCRIBERS_ID" >> $GITHUB_ENV
+
+          # Create AUTH_CHALLENGES namespace
+          AUTH_CHALLENGES_ID=$(wrangler kv:namespace create AUTH_CHALLENGES --json | jq -r '.id')
+          echo "AUTH_CHALLENGES_KV_ID=$AUTH_CHALLENGES_ID" >> $GITHUB_ENV
+
+          # Update wrangler.toml
+          cat >> wrangler.toml << EOF
+
+          [[kv_namespaces]]
+          binding = "SUBSCRIBERS"
+          id = "$SUBSCRIBERS_ID"
+
+          [[kv_namespaces]]
+          binding = "AUTH_CHALLENGES"
+          id = "$AUTH_CHALLENGES_ID"
+          EOF
+
+          # Commit updated wrangler.toml
+          git add wrangler.toml
+          git commit -m "Add KV namespace IDs"
+          git push origin main
+
+          # Redeploy with KV bindings
+          wrangler deploy
+
+          echo "✓ KV namespaces created and bound"
+
+      - name: Configure Worker Secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.USER_CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ inputs.cloudflare_account_id }}
+        run: |
+          cd omni-blogger-worker
+
+          # Generate JWT secret
+          JWT_SECRET=$(openssl rand -base64 32)
+          echo "$JWT_SECRET" | wrangler secret put JWT_SECRET
+
+          # Set GitHub token
+          echo "${{ secrets.USER_GITHUB_TOKEN }}" | wrangler secret put GITHUB_TOKEN
+
+          # Set Resend API key if email enabled
+          if [ "${{ inputs.enable_email }}" = "true" ]; then
+            echo "${{ secrets.USER_RESEND_API_KEY }}" | wrangler secret put RESEND_API_KEY
+          fi
+
+          echo "✓ Secrets configured"
+
+      - name: Deploy Editor to Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.USER_CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ inputs.cloudflare_account_id }}
+        run: |
+          cd omni-blogger-editor
+
+          # Deploy to Pages
+          wrangler pages deploy . \
+            --project-name="${{ inputs.blog_name }}-editor" \
+            --branch=main
+
+          echo "✓ Editor deployed to https://${{ inputs.blog_name }}-editor.pages.dev"
+
+      - name: Deploy Blog to Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.USER_CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ inputs.cloudflare_account_id }}
+        run: |
+          cd ${{ inputs.blog_name }}
+
+          # Build Hugo site
+          hugo --minify
+
+          # Deploy to Pages
+          wrangler pages deploy public \
+            --project-name="${{ inputs.blog_name }}" \
+            --branch=main
+
+          echo "✓ Blog deployed to https://${{ inputs.blog_name }}.pages.dev"
+
+      - name: Setup Custom Domain (if provided)
+        if: ${{ inputs.custom_domain != '' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.USER_CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ inputs.cloudflare_account_id }}
+        run: |
+          echo "Custom domain setup requires DNS configuration"
+          echo "Visit Cloudflare dashboard to complete setup for: ${{ inputs.custom_domain }}"
+
+      - name: Deployment Summary
+        run: |
+          echo "================================================"
+          echo "🎉 Deployment Complete!"
+          echo "================================================"
+          echo ""
+          echo "Your URLs:"
+          echo "  Editor:  https://${{ inputs.blog_name }}-editor.pages.dev"
+          echo "  Blog:    https://${{ inputs.blog_name }}.pages.dev"
+          echo "  API:     https://${{ inputs.blog_name }}-api.workers.dev"
+          echo ""
+          echo "Next steps:"
+          echo "  1. Visit your editor URL"
+          echo "  2. Register your passkey (Touch ID / Face ID)"
+          echo "  3. Start writing!"
+          echo ""
+          echo "Repositories created:"
+          echo "  - https://github.com/${{ inputs.github_username }}/omni-blogger-editor"
+          echo "  - https://github.com/${{ inputs.github_username }}/omni-blogger-worker"
+          echo "  - https://github.com/${{ inputs.github_username }}/${{ inputs.blog_name }}"
+          echo ""
+          echo "================================================"

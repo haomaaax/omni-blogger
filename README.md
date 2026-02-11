@@ -85,7 +85,9 @@ This project powers:
 - Use the [Deploy Wizard](deploy-wizard/index.html) - browser-based, no CLI required
 - Automated OAuth flows for Cloudflare and GitHub
 - **Browser-based passkey registration** - just touch your fingerprint, no console extraction!
-- Real-time progress tracking
+- **Automatic error recovery** - retries failed steps automatically
+- **Progress persistence** - resume exactly where you left off if interrupted
+- Real-time progress tracking with health checks
 
 **⚡ Quick Start** (60 minutes)
 - Follow [QUICK-START.md](docs/QUICK-START.md) with automated scripts
