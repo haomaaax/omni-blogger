@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizard Test Suite</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { color: #1C3A52; }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .pass { background: #d4edda; color: #155724; }
+        .fail { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            padding: 10px 20px;
+            background: #1C3A52;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2a4a62; }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Omni Blogger Wizard Test Suite</h1>
+
+    <div class="test-section">
+        <h2>Environment Tests</h2>
+        <div id="env-results"></div>
+        <button onclick="runEnvironmentTests()">Run Environment Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>JavaScript Functionality Tests</h2>
+        <div id="js-results"></div>
+        <button onclick="runJavaScriptTests()">Run JavaScript Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Error Recovery Tests</h2>
+        <div id="error-results"></div>
+        <button onclick="runErrorRecoveryTests()">Run Error Recovery Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Progress Persistence Tests</h2>
+        <div id="persistence-results"></div>
+        <button onclick="runPersistenceTests()">Run Persistence Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>API Integration Tests</h2>
+        <div id="api-results"></div>
+        <button onclick="runAPITests()">Run API Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Full Integration Test</h2>
+        <div id="integration-results"></div>
+        <button onclick="runFullIntegrationTest()">Run Full Integration</button>
+    </div>
+
+    <script src="js/error-recovery.js"></script>
+    <script src="js/progress-persistence.js"></script>
+    <script src="js/wizard.js"></script>
+
+    <script>
+        // Test runner utility
+        function displayResult(containerId, test, passed, details = '') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            div.innerHTML = `
+                <strong>${passed ? '✓' : '✗'} ${test}</strong>
+                ${details ? `<br><small>${details}</small>` : ''}
+            `;
+            container.appendChild(div);
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        // Environment Tests
+        function runEnvironmentTests() {
+            clearResults('env-results');
+
+            // Check browser APIs
+            displayResult('env-results', 'localStorage Available',
+                typeof(Storage) !== 'undefined',
+                'Required for progress persistence');
+
+            displayResult('env-results', 'fetch API Available',
+                typeof(fetch) !== 'undefined',
+                'Required for API calls');
+
+            displayResult('env-results', 'crypto API Available',
+                typeof(crypto) !== 'undefined' && typeof(crypto.getRandomValues) === 'function',
+                'Required for random generation');
+
+            displayResult('env-results', 'WebAuthn Available',
+                typeof(PublicKeyCredential) !== 'undefined',
+                'Required for passkey registration');
+
+            displayResult('env-results', 'Clipboard API Available',
+                typeof(navigator.clipboard) !== 'undefined',
+                'Required for sharing progress links');
+
+            // Check if served over HTTPS or localhost
+            const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+            displayResult('env-results', 'Secure Context',
+                isSecure,
+                isSecure ? 'WebAuthn will work' : 'WebAuthn requires HTTPS or localhost');
+        }
+
+        // JavaScript Functionality Tests
+        function runJavaScriptTests() {
+            clearResults('js-results');
+
+            try {
+                // Test error recovery module
+                displayResult('js-results', 'Error Recovery Module Loaded',
+                    typeof(window.errorRecovery) !== 'undefined',
+                    'errorRecovery object available');
+
+                displayResult('js-results', 'Retry Function Available',
+                    typeof(window.errorRecovery.retryWithBackoff) === 'function',
+                    'retryWithBackoff function exists');
+
+                displayResult('js-results', 'Error Manager Class Available',
+                    typeof(window.errorRecovery.ErrorRecoveryManager) === 'function',
+                    'ErrorRecoveryManager constructor exists');
+
+                // Test progress persistence module
+                displayResult('js-results', 'Progress Persistence Module Loaded',
+                    typeof(window.progressPersistence) !== 'undefined',
+                    'progressPersistence object available');
+
+                displayResult('js-results', 'Progress Manager Class Available',
+                    typeof(window.progressPersistence.ProgressManager) === 'function',
+                    'ProgressManager constructor exists');
+
+                // Test wizard state
+                displayResult('js-results', 'Wizard State Available',
+                    typeof(wizardState) !== 'undefined',
+                    'wizardState object initialized');
+
+                displayResult('js-results', 'Wizard Navigation Functions',
+                    typeof(nextStep) === 'function' && typeof(previousStep) === 'function',
+                    'nextStep and previousStep functions exist');
+
+            } catch (error) {
+                displayResult('js-results', 'JavaScript Test Error', false, error.message);
+            }
+        }
+
+        // Error Recovery Tests
+        function runErrorRecoveryTests() {
+            clearResults('error-results');
+
+            try {
+                const { retryWithBackoff, ErrorRecoveryManager, classifyError } = window.errorRecovery;
+
+                // Test ErrorRecoveryManager
+                const manager = new ErrorRecoveryManager();
+                displayResult('error-results', 'Error Manager Instantiation',
+                    manager instanceof ErrorRecoveryManager,
+                    'Manager created successfully');
+
+                manager.markFailed('test-step', new Error('Test error'));
+                displayResult('error-results', 'Mark Failed Works',
+                    manager.hasFailed('test-step'),
+                    'Failed step tracked correctly');
+
+                manager.markRecovered('test-step');
+                displayResult('error-results', 'Mark Recovered Works',
+                    !manager.hasFailed('test-step'),
+                    'Recovered step cleared');
+
+                // Test error classification
+                const networkError = new Error('NetworkError: Failed to fetch');
+                const classification = classifyError(networkError);
+                displayResult('error-results', 'Error Classification',
+                    classification.type === 'NETWORK' && classification.retryable === true,
+                    `Classified as ${classification.type}, retryable: ${classification.retryable}`);
+
+                // Test retry with backoff
+                let attempts = 0;
+                const testFn = async () => {
+                    attempts++;
+                    if (attempts < 2) throw new Error('temporary_failure');
+                    return 'success';
+                };
+
+                retryWithBackoff(testFn, 'test').then(result => {
+                    displayResult('error-results', 'Retry With Backoff',
+                        result === 'success' && attempts === 2,
+                        `Succeeded after ${attempts} attempts`);
+                }).catch(err => {
+                    displayResult('error-results', 'Retry With Backoff', false, err.message);
+                });
+
+            } catch (error) {
+                displayResult('error-results', 'Error Recovery Test Error', false, error.message);
+            }
+        }
+
+        // Progress Persistence Tests
+        function runPersistenceTests() {
+            clearResults('persistence-results');
+
+            try {
+                const { ProgressManager } = window.progressPersistence;
+
+                // Clear any existing progress
+                localStorage.removeItem('omni-blogger-deployment');
+
+                const manager = new ProgressManager();
+                displayResult('persistence-results', 'Progress Manager Instantiation',
+                    manager instanceof ProgressManager,
+                    'Manager created successfully');
+
+                // Test save
+                const testState = {
+                    currentStep: 3,
+                    config: { blogName: 'test-blog' },
+                    completedSteps: [],
+                    failedSteps: [],
+                    deploymentStarted: false
+                };
+
+                const saved = manager.save(testState);
+                displayResult('persistence-results', 'Save Progress',
+                    saved,
+                    'Progress saved to localStorage');
+
+                // Test load
+                const loaded = manager.load();
+                displayResult('persistence-results', 'Load Progress',
+                    loaded && loaded.config.blogName === 'test-blog',
+                    `Loaded blog name: ${loaded?.config?.blogName}`);
+
+                // Test has saved progress
+                displayResult('persistence-results', 'Has Saved Progress',
+                    manager.hasSavedProgress(),
+                    'Detects saved progress correctly');
+
+                // Test export/import
+                const link = manager.exportAsLink();
+                displayResult('persistence-results', 'Export As Link',
+                    link && link.includes('resume='),
+                    'Generated shareable link');
+
+                // Test clear
+                manager.clear();
+                displayResult('persistence-results', 'Clear Progress',
+                    !manager.hasSavedProgress(),
+                    'Progress cleared successfully');
+
+            } catch (error) {
+                displayResult('persistence-results', 'Persistence Test Error', false, error.message);
+            }
+        }
+
+        // API Integration Tests
+        async function runAPITests() {
+            clearResults('api-results');
+
+            // Test network health check
+            try {
+                const { checkNetworkHealth } = window.errorRecovery;
+
+                displayResult('api-results', 'Network Health Check Started', true, 'Testing connectivity...');
+
+                const health = await checkNetworkHealth();
+
+                const cfHealthy = health.find(h => h.name === 'Cloudflare API');
+                displayResult('api-results', 'Cloudflare API Reachable',
+                    cfHealthy && cfHealthy.status === 'OK',
+                    cfHealthy ? `Status: ${cfHealthy.status}, ${cfHealthy.responseTime}ms` : 'Not tested');
+
+                const ghHealthy = health.find(h => h.name === 'GitHub API');
+                displayResult('api-results', 'GitHub API Reachable',
+                    ghHealthy && ghHealthy.status === 'OK',
+                    ghHealthy ? `Status: ${ghHealthy.status}, ${ghHealthy.responseTime}ms` : 'Not tested');
+
+            } catch (error) {
+                displayResult('api-results', 'API Test Error', false, error.message);
+            }
+        }
+
+        // Full Integration Test
+        async function runFullIntegrationTest() {
+            clearResults('integration-results');
+
+            const div = document.createElement('div');
+            div.className = 'test-result info';
+            div.innerHTML = '<strong>Running full integration test...</strong>';
+            document.getElementById('integration-results').appendChild(div);
+
+            // Run all tests
+            await new Promise(resolve => setTimeout(resolve, 500));
+            runEnvironmentTests();
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+            runJavaScriptTests();
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+            runErrorRecoveryTests();
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+            runPersistenceTests();
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await runAPITests();
+
+            const finalDiv = document.createElement('div');
+            finalDiv.className = 'test-result pass';
+            finalDiv.innerHTML = '<strong>✓ Full integration test complete!</strong><br>Check each section above for detailed results.';
+            document.getElementById('integration-results').appendChild(finalDiv);
+        }
+
+        // Run environment tests on load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('Wizard test suite loaded');
+        });
+    </script>
+</body>
+</html>
